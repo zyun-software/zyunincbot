@@ -1,7 +1,7 @@
 CREATE TABLE users (
   id BIGINT PRIMARY KEY NOT NULL,
   nickname VARCHAR(16) UNIQUE NOT NULL,
-  api VARCHAR(32),
+  api VARCHAR(32) DEFAULT NULL,
   admin BOOLEAN DEFAULT FALSE NOT NULL,
   blocked BOOLEAN DEFAULT FALSE NOT NULL
 );
@@ -24,8 +24,7 @@ CREATE INDEX idx_transactions ON transactions (sender_id, receiver_id);
 CREATE TABLE invoices (
   id BIGSERIAL PRIMARY KEY NOT NULL,
   transaction_id BIGINT REFERENCES transactions(id) ON DELETE SET NULL,
-  user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
-  timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+  user_id BIGINT REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE INDEX idx_invoices ON invoices (transaction_id, user_id);

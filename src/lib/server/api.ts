@@ -4,10 +4,10 @@ import postgres from 'postgres';
 
 export const telegram = async (method: string, data: any) => {
 	try {
-		const result = await axios.post(`https://api.telegram.org/bot${TG_ID}:${TG_TOKEN}/${method}`, {
-			parse_mode: 'Markdown',
-			...data
-		});
+		const result = await axios.post(
+			`https://api.telegram.org/bot${TG_ID}:${TG_TOKEN}/${method}`,
+			data
+		);
 
 		return result;
 	} catch (error: any) {
@@ -53,6 +53,108 @@ export const findUserById = async (id: string) => {
 		}
 
 		return users[0];
+	} catch {
+		return null;
+	}
+};
+
+export const findUserByNickname = async (nickname: string) => {
+	try {
+		const users = await sql<
+			UserType[]
+		>`select * from users where lower(nickname) = lower(${nickname})`;
+		if (users.length !== 1) {
+			return null;
+		}
+
+		return users[0];
+	} catch {
+		return null;
+	}
+};
+
+export const getAdmins = async () => {
+	try {
+		const users = await sql<UserType[]>`select * from users where admin`;
+
+		return users;
+	} catch {
+		return [];
+	}
+};
+
+export const updateUser = async (user: {
+	id: string;
+	nickname: string;
+	api: string | null;
+	blocked: boolean;
+}) => {
+	try {
+		await sql`update users set ${sql(user)} where id = ${user.id}`;
+	} catch {}
+};
+
+export const insertUser = async (user: { id: string; nickname: string }) => {
+	try {
+		await sql`insert into users ${sql(user)}`;
+	} catch {}
+};
+
+export type TransactionType = {
+	status:
+		| 'INVALID_AMOUNT'
+		| 'INVALID_OPERATION'
+		| 'SENDER_NOT_FOUND'
+		| 'SENDER_IS_BLOCKED'
+		| 'NO_COST'
+		| 'RECEIVER_NOT_FOUND'
+		| 'RECEIVER_IS_BLOCKED'
+		| 'SUCCESS';
+	transaction_id: string | null;
+};
+
+export const transferMoney = async (
+	sender_id: string | null,
+	receiver_id: string | null,
+	amount: number
+) => {
+	try {
+		let transaction = await sql<
+			TransactionType[]
+		>`SELECT * FROM perform_transaction(${sender_id}, ${receiver_id}, ${amount})`;
+		if (transaction.length !== 1) {
+			return null;
+		}
+
+		if (transaction[0].status === 'SUCCESS') {
+			let sender_name = 'Zyun Банк';
+			if (sender_id != null) {
+				const sender = await findUserById(sender_id);
+				if (sender) {
+					sender_name = sender.nickname;
+				}
+			}
+
+			let chat_ids = [];
+			if (receiver_id !== null) {
+				chat_ids.push(receiver_id);
+			} else {
+				const admins = await getAdmins();
+				chat_ids = admins.map((admin) => admin.id);
+			}
+
+			for (const chat_id of chat_ids) {
+				await telegram('sendMessage', {
+					chat_id,
+					text: `💸 Отримано переказ від \`${sender_name}\` на суму \`${amount}\` ₴! Код транзакції: \`${
+						transaction[0].transaction_id
+					}\` 💰${receiver_id === null ? '\n🏦 На рахунок Zyun Банк' : ''}`,
+					parse_mode: 'Markdown'
+				});
+			}
+		}
+
+		return transaction[0];
 	} catch {
 		return null;
 	}
