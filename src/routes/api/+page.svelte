@@ -6,4 +6,4 @@
   onMount(() => showBackButton(() => goto('/')));
 </script>
 
-<h1>Магазин</h1>
+<h1>API</h1>

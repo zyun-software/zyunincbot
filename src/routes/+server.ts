@@ -1,4 +1,4 @@
-import { TG_TOKEN, URL_DONATE, URL_PANEL } from '$env/static/private';
+import { TG_TOKEN, URL_PANEL } from '$env/static/private';
 import {
 	findUserById,
 	findUserByNickname,
@@ -28,8 +28,8 @@ export async function POST({ request }) {
 	if (user === null) {
 		await telegram('sendMessage', {
 			chat_id,
-			text: `🔒 Ви не авторизовані в системі, ваш код: \`${chat_id}\``,
-			parse_mode: 'Markdown',
+			text: `🔒 Ви не авторизовані в системі, ваш код: <code>${chat_id}</code>`,
+			parse_mode: 'HTML',
 			reply_markup: {
 				remove_keyboard: true
 			}
@@ -50,6 +50,18 @@ export async function POST({ request }) {
 		return text('Заблоковані');
 	}
 
+	const showPanel = async (chat_id: string) =>
+		await telegram('setChatMenuButton', {
+			chat_id,
+			menu_button: {
+				type: 'web_app',
+				text: 'Zyun Банк',
+				web_app: {
+					url: `${URL_PANEL}/bank`
+				}
+			}
+		});
+
 	if (user.admin && data.message) {
 		const minecraftNicknameRegex = /^[a-zA-Z0-9_]{1,16}$/;
 
@@ -62,10 +74,21 @@ export async function POST({ request }) {
 					id: registerMatches[2],
 					nickname: registerMatches[1]
 				});
+
+				await showPanel(registerMatches[2]);
+
+				await telegram('sendMessage', {
+					chat_id: registerMatches[2],
+					text: `🔐 Вас щойно було зареєстровано в системі під псевдонімом: <code>${registerMatches[1]}</code>`,
+					parse_mode: 'HTML'
+				});
+
 				await telegram('sendMessage', {
 					chat_id,
-					text: `✅ ${registerMatches[1]} зареєстровано`
+					text: `✅ <code>${registerMatches[1]}</code> зареєстровано`,
+					parse_mode: 'HTML'
 				});
+
 				return text('Реєстрація гравця');
 			}
 		}
@@ -82,10 +105,19 @@ export async function POST({ request }) {
 				const oldNickname = findCur.nickname;
 				findCur.nickname = renameMatches[2];
 				await updateUser(findCur);
+
+				await telegram('sendMessage', {
+					chat_id: findCur.id,
+					text: `✍🏻 Ваш псевдонім було змінено на <code>${renameMatches[2]}</code>`,
+					parse_mode: 'HTML'
+				});
+
 				await telegram('sendMessage', {
 					chat_id,
-					text: `✅ ${oldNickname} було перейменовано в ${renameMatches[2]}`
+					text: `✅ Псевдонім <code>${oldNickname}</code> було змінено на <code>${renameMatches[2]}</code>`,
+					parse_mode: 'HTML'
 				});
+
 				return text('Перейменування гравця');
 			}
 		}
@@ -96,10 +128,31 @@ export async function POST({ request }) {
 			if (find && !find.admin) {
 				find.blocked = /^З/.test(data.message.text);
 				await updateUser(find);
+
+				if (find.blocked) {
+					await telegram('setChatMenuButton', {
+						chat_id: find.id,
+						menu_button: {
+							type: 'default'
+						}
+					});
+				} else {
+					await showPanel(find.id);
+				}
+
+				await telegram('sendMessage', {
+					chat_id: find.id,
+					text: `${find.blocked ? '⛔' : '🔓'} Вас було ${find.blocked ? 'за' : 'роз'}блоковано`
+				});
+
 				await telegram('sendMessage', {
 					chat_id,
-					text: `✅ ${find.nickname} ${find.blocked ? 'за' : 'роз'}блоковано`
+					text: `${find.blocked ? '⛔' : '🔓'} <code>${find.nickname}</code> ${
+						find.blocked ? 'за' : 'роз'
+					}блоковано`,
+					parse_mode: 'HTML'
 				});
+
 				return text('Блокування гравця');
 			}
 		}
@@ -113,7 +166,8 @@ export async function POST({ request }) {
 				if (transaction && transaction.status === 'SUCCESS') {
 					await telegram('sendMessage', {
 						chat_id,
-						text: `✅ ${receiver.nickname} було нараховано ${amount} ₴`
+						text: `✅ <code>${receiver.nickname}</code> було нараховано <code>${amount}</code> ₴`,
+						parse_mode: 'HTML'
 					});
 					return text('Нарахування грошей гравцю');
 				}
@@ -121,41 +175,14 @@ export async function POST({ request }) {
 		}
 	}
 
+	await showPanel(user.id);
+
 	await telegram('sendMessage', {
 		chat_id,
-		text: '🌇 Головне меню',
+		text: `👋 Привіт <code>${user.nickname}</code>, натисніть на кнопку 🎛️ <code>Zyun Банк</code> щоб отримати доступ до всього функціоналу`,
+		parse_mode: 'HTML',
 		reply_markup: {
-			keyboard: [
-				[
-					{
-						text: '🏦',
-						web_app: { url: `${URL_PANEL}/bank` }
-					},
-					{
-						text: '🛍️',
-						web_app: { url: `${URL_PANEL}/shop` }
-					},
-					{
-						text: '📦',
-						web_app: { url: `${URL_PANEL}/warehouse` }
-					}
-				],
-				[
-					{
-						text: '⚙️',
-						web_app: { url: `${URL_PANEL}/settings` }
-					},
-					{
-						text: 'ℹ️',
-						web_app: { url: `${URL_PANEL}/info` }
-					},
-					{
-						text: '💸',
-						web_app: { url: URL_DONATE }
-					}
-				]
-			],
-			resize_keyboard: true
+			remove_keyboard: true
 		}
 	});
 

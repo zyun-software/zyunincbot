@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { alertUtility, hideBackButton, hideMainButton, showMainButton } from '$lib/utilities';
+	import { goto } from '$app/navigation';
+	import { alertUtility, hideMainButton, showBackButton, showMainButton } from '$lib/utilities';
 	import { onMount } from 'svelte';
 	import { writable } from 'svelte/store';
 
@@ -122,9 +123,7 @@
 		return result;
 	};
 
-	onMount(() => {
-		hideBackButton();
-	});
+	onMount(() => showBackButton(() => goto('/')));
 </script>
 
 <header class="px-4 py-2">
@@ -168,11 +167,7 @@
 				? 'bg-tg-button-color'
 				: 'bg-tg-secondary-bg-color'}">🔍 Фільтр</button
 		>
-		<a
-			href="/bank/test"
-			class="p-3 rounded bg-tg-secondary-bg-color text-center"
-			>📑 Рахунок</a
-		>
+		<a href="/bank/invoices" class="p-3 rounded bg-tg-secondary-bg-color text-center">📑 Рахунок</a>
 	</nav>
 	{#if showMoneyTransfer}
 		<div class="mt-4">

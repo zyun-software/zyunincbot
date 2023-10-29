@@ -146,10 +146,13 @@ export const transferMoney = async (
 			for (const chat_id of chat_ids) {
 				await telegram('sendMessage', {
 					chat_id,
-					text: `💸 Отримано переказ від \`${sender_name}\` на суму \`${amount}\` ₴! Код транзакції: \`${
-						transaction[0].transaction_id
-					}\` 💰${receiver_id === null ? '\n🏦 На рахунок Zyun Банк' : ''}`,
-					parse_mode: 'Markdown'
+					text:
+						'💸 <b>Отримано переказ коштів</b>\n\n' +
+						`🆔 <i>Код транзакції</i>: <code>${transaction[0].transaction_id}</code>\n` +
+						`📥 <i>Відправник</i>: <code>${sender_name}</code>\n` +
+						`💰 <i>Сума переказу</i>: <code>${amount}</code> ₴` +
+						(receiver_id === null ? '\n\n🏦 На рахунок Zyun Банк' : ''),
+					parse_mode: 'HTML'
 				});
 			}
 		}
