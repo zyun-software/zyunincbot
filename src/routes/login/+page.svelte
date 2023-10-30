@@ -4,11 +4,11 @@
 
 	let error = false;
 	let initData = '';
-	let myButton: HTMLButtonElement;
+	let loginButton: HTMLButtonElement;
 
 	onMount(() => {
 		initData = window.Telegram.WebApp.initData;
-		setTimeout(() => myButton.click(), 10);
+		setTimeout(() => loginButton.click(), 10);
 	});
 </script>
 
@@ -21,8 +21,6 @@
 		class="hidden"
 		use:enhance={() =>
 			async ({ result, update }) => {
-				console.log(result);
-
 				if (result.status === 200 && result.type === 'success' && !result.data?.success) {
 					error = true;
 				}
@@ -31,6 +29,6 @@
 			}}
 	>
 		<input type="hidden" name="init-data" value={initData} />
-		<button bind:this={myButton} />
+		<button bind:this={loginButton} />
 	</form>
 </div>

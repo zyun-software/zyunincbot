@@ -9,13 +9,15 @@ CREATE TABLE users (
 INSERT INTO users (id, nickname, admin)
 VALUES
   (494209756, 'Ziozyun', TRUE),
-  (873687184, 'NeMoKyryl', FALSE);
+  (873687184, 'NeMoKyryl', FALSE),
+  (543592260, 'Han__Salo', FALSE);
 
 CREATE TABLE transactions (
   id BIGSERIAL PRIMARY KEY NOT NULL,
   sender_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
   receiver_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
   amount INTEGER NOT NULL,
+  comment TEXT,
   timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
@@ -81,6 +83,7 @@ CREATE OR REPLACE FUNCTION perform_transaction(
   sender_id BIGINT,
   receiver_id BIGINT,
   amount INTEGER,
+  comment TEXT,
   OUT status TEXT,
   OUT transaction_id BIGINT
 ) AS $$
@@ -133,8 +136,8 @@ BEGIN
   END IF;
 
   -- Створюємо транзакцію і отримуємо її ID
-  INSERT INTO transactions (sender_id, receiver_id, amount)
-  VALUES (sender_id, receiver_id, amount)
+  INSERT INTO transactions (sender_id, receiver_id, amount, comment)
+  VALUES (sender_id, receiver_id, amount, comment)
   RETURNING id INTO transaction_id;
   
   -- Повертаємо успішну операцію та ID транзакції

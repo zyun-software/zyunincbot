@@ -1,4 +1,5 @@
 import { PG_DB, PG_PASSWORD, PG_USER, TG_ID, TG_TOKEN } from '$env/static/private';
+import type { PaginationType, TransactionItemType } from '$lib/utilities';
 import axios from 'axios';
 import postgres from 'postgres';
 
@@ -87,6 +88,16 @@ export const calculateBalance = async (id: string) => {
 	}
 };
 
+export const getUsersIgnoreId = async (id: string) => {
+	try {
+		const users = await sql<UserType[]>`select * from users where id <> ${id} order by nickname`;
+
+		return users;
+	} catch {
+		return [];
+	}
+};
+
 export const getAdmins = async () => {
 	try {
 		const users = await sql<UserType[]>`select * from users where admin`;
@@ -123,6 +134,7 @@ export type TransactionType = {
 		| 'NO_COST'
 		| 'RECEIVER_NOT_FOUND'
 		| 'RECEIVER_IS_BANNED'
+		| 'ERROR'
 		| 'SUCCESS';
 	transaction_id: string | null;
 };
@@ -130,14 +142,22 @@ export type TransactionType = {
 export const transferMoney = async (
 	sender_id: string | null,
 	receiver_id: string | null,
-	amount: number
-) => {
+	amount: number,
+	comment: string
+): Promise<TransactionType> => {
+	let error: TransactionType = {
+		status: 'ERROR',
+		transaction_id: null
+	};
 	try {
+		const cleanedString = comment.replace(/\s+/g, ' ').trim().slice(0, 200);
+		const safeComment = cleanedString.length === 0 ? null : cleanedString;
+
 		let transaction = await sql<
 			TransactionType[]
-		>`SELECT * FROM perform_transaction(${sender_id}, ${receiver_id}, ${amount})`;
+		>`SELECT * FROM perform_transaction(${sender_id}, ${receiver_id}, ${amount}, ${safeComment})`;
 		if (transaction.length !== 1) {
-			return null;
+			return error;
 		}
 
 		if (transaction[0].status === 'SUCCESS') {
@@ -173,6 +193,81 @@ export const transferMoney = async (
 
 		return transaction[0];
 	} catch {
-		return null;
+		return error;
 	}
+};
+
+const perPage = 10;
+
+export const loadTransactions = async (
+	id: string,
+	page: number,
+	code: string,
+	date: string,
+	addressee_id: string
+) => {
+	page--;
+	const result: PaginationType<TransactionItemType> = {
+		items: [],
+		more: false
+	};
+	try {
+		const items = await sql<TransactionItemType[]>`
+			select
+				t.id,
+				case
+					when t.sender_id = ${id} then -amount 
+					else amount 
+				end amount,
+				coalesce(case
+					when t.sender_id = ${id} then ur.nickname
+					else us.nickname
+				end, 'Zyun Банк') nickname,
+				case
+					when t.comment is null then 'не вказано'
+					else t.comment
+				end comment,
+				jsonb_build_object(
+					'day', EXTRACT(DAY from t.timestamp),
+					'month', EXTRACT(MONTH from t.timestamp),
+					'year', EXTRACT(YEAR from t.timestamp),
+					'hour', EXTRACT(HOUR from t.timestamp),
+					'minute', EXTRACT(MINUTE from t.timestamp)
+				) AS date
+			from transactions t
+			left join users us on us.id = t.sender_id
+			left join users ur on ur.id = t.receiver_id
+			where
+				${id} in(t.sender_id, t.receiver_id)
+				and (
+					(
+						${code} = ''
+						and (
+							${addressee_id} = '-1'
+							or (
+								${addressee_id} = '0'
+								and (t.sender_id is null or t.receiver_id is null)
+							)
+							or ${addressee_id} in(t.sender_id, t.receiver_id)
+						) and (
+							${date} = ''
+							or (${date} <> '' and t.timestamp <= TO_TIMESTAMP(${date}, 'YYYY-MM-DD"T"HH24:MI'))
+						)
+					)
+					or ${code} = cast(t.id as text)
+				)
+			order by timestamp desc
+			offset ${page * perPage}
+			limit ${perPage + 1}
+		`;
+
+		if (items.length > perPage) {
+			items.pop();
+			result.more = true;
+		}
+
+		result.items = items;
+	} catch {}
+
+	return result;
 };

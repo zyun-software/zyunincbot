@@ -157,12 +157,17 @@ export async function POST({ request }) {
 			}
 		}
 
-		const transferMoneyMatches = data.message.text.match(/^Нарахувати (\w+) (\d+)$/);
+		const transferMoneyMatches = data.message.text.match(/^Нарахувати (\w+) (\d+)/);
+
 		if (transferMoneyMatches && minecraftNicknameRegex.test(transferMoneyMatches[1])) {
 			const amount = parseInt(transferMoneyMatches[2]);
 			const receiver = await findUserByNickname(transferMoneyMatches[1]);
 			if (amount > 0 && receiver) {
-				const transaction = await transferMoney(null, receiver.id, amount);
+				const comment = data.message.text.replace(
+					`Нарахувати ${transferMoneyMatches[1]} ${transferMoneyMatches[2]}`,
+					''
+				);
+				const transaction = await transferMoney(null, receiver.id, amount, comment);
 				if (transaction && transaction.status === 'SUCCESS') {
 					await telegram('sendMessage', {
 						chat_id,

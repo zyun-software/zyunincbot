@@ -3,6 +3,8 @@
 	import { hideBackButton } from '$lib/utilities';
 	import { onMount } from 'svelte';
 
+	export let data;
+
 	const row = 'grid grid-cols-3 gap-2 mb-2';
 	const button =
 		'p-3 w-full block bg-tg-secondary-bg-color hover:bg-tg-button-color text-center rounded';
@@ -11,6 +13,9 @@
 </script>
 
 <div class="p-4">
+	<blockquote class="mb-4 p-2 rounded border border-tg-hint-color">
+		👋 Вітаю, <b>{data.nickname}</b>!
+	</blockquote>
 	<div class="{row} mb-2">
 		<a href="/bank" class={button}>
 			<span class="block mb-2 text-3xl">🏦</span>

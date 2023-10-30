@@ -12,14 +12,22 @@ export function alertUtility(message: any, callback?: () => void): void {
 
 export async function confirmUtility(
 	message: any,
-	callback: (yes?: boolean) => Promise<void> | void
-): Promise<void> {
+	callback: (yes?: boolean) => Promise<void> | void = () => {}
+): Promise<boolean> {
 	const webApp = window?.Telegram?.WebApp;
 	if (webApp) {
-		webApp.showConfirm(message, callback);
+		const yes = await new Promise<boolean>((resolve) => {
+			webApp.showConfirm(message, async (yes) => {
+				resolve(!!yes);
+				await callback(yes);
+			});
+		});
+
+		return yes;
 	} else {
 		const yes = confirm(message);
 		await callback(yes);
+		return yes;
 	}
 }
 
@@ -115,6 +123,19 @@ export const getDateString = (date: DateType) => {
 	}
 
 	return result;
+};
+
+export type TransactionItemType = {
+	id: number;
+	nickname: string;
+	amount: number;
+	comment: string;
+	date: DateType;
+};
+
+export type PaginationType<TItem> = {
+	items: TItem[];
+	more: boolean;
 };
 
 // export async function requestUtility<TResponse>(
