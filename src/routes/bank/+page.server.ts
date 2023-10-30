@@ -13,11 +13,6 @@ export async function load({ request, cookies }) {
 		return {};
 	}
 
-	if (!!cookies.get('transferMoneyAction')) {
-		cookies.delete('transferMoneyAction');
-		return {};
-	}
-
 	const user = await getUser(cookies);
 
 	const balance = await calculateBalance(user.id);
@@ -56,7 +51,6 @@ export const actions = {
 		return { ...transactions, code };
 	},
 	transferMoney: async ({ request, cookies }) => {
-		cookies.set('transferMoneyAction', 'true');
 		const user = await getUser(cookies);
 		const data = await request.formData();
 
