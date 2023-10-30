@@ -68,6 +68,55 @@ export function showBackButton(handler: HandlerType): void {
 	}
 }
 
+export const months = [
+	'січня',
+	'лютого',
+	'березня',
+	'квітня',
+	'травня',
+	'червня',
+	'липня',
+	'серпня',
+	'вересня',
+	'жовтня',
+	'листопада',
+	'грудня'
+];
+
+export type DateType = {
+	day: number;
+	month: number;
+	year: number;
+	hour: number;
+	minute: number;
+};
+
+export const getDateString = (date: DateType) => {
+	const now = new Date();
+
+	const dayOfMonth = now.getDate();
+	const monthIndex = now.getMonth();
+	const monthText = months[monthIndex];
+	const year = now.getFullYear();
+
+	if (date.month === monthIndex + 1 && date.year === year) {
+		if (dayOfMonth === date.day) {
+			return 'сьогодні';
+		}
+
+		if (Math.abs(dayOfMonth - date.day) === 1) {
+			return 'вчора';
+		}
+	}
+
+	let result = `${dayOfMonth} ${monthText}`;
+	if (date.year !== year) {
+		result += ` ${date.year}`;
+	}
+
+	return result;
+};
+
 // export async function requestUtility<TResponse>(
 // 	method: string,
 // 	data: object = {}

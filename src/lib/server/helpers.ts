@@ -4,7 +4,7 @@ import { createHmac } from 'crypto';
 import { findUserById } from './api';
 
 export const getUser = async (cookies: Cookies) => {
-	const initData = cookies.get('init-data') ?? 'init data';
+	const initData = cookies.get('init-data') ?? '';
 
 	const encoded = decodeURIComponent(initData);
 
@@ -21,7 +21,7 @@ export const getUser = async (cookies: Cookies) => {
 	const valid = _hash === hash;
 	const userField = arr.find((str) => str.startsWith('user='));
 
-	const throwUnauthorized = () => redirect(307, `/unauthorized`);
+	const throwUnauthorized = () => redirect(307, `/login`);
 
 	if (!valid || !userField) {
 		throw throwUnauthorized();
@@ -34,8 +34,8 @@ export const getUser = async (cookies: Cookies) => {
 		throw throwUnauthorized();
 	}
 
-	if (user.blocked) {
-		throw redirect(307, '/blocked');
+	if (user.banned) {
+		throw redirect(307, '/banned');
 	}
 
 	return user;

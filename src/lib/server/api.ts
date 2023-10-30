@@ -42,7 +42,7 @@ export type UserType = {
 	nickname: string;
 	api: string | null;
 	admin: boolean;
-	blocked: boolean;
+	banned: boolean;
 };
 
 export const findUserById = async (id: string) => {
@@ -73,6 +73,20 @@ export const findUserByNickname = async (nickname: string) => {
 	}
 };
 
+export const calculateBalance = async (id: string) => {
+	try {
+		const results = await sql<{ balance: number }[]>`select calculate_balance(${id}) as balance`;
+
+		if (results.length !== 1) {
+			return 0;
+		}
+
+		return results[0].balance;
+	} catch {
+		return 0;
+	}
+};
+
 export const getAdmins = async () => {
 	try {
 		const users = await sql<UserType[]>`select * from users where admin`;
@@ -87,7 +101,7 @@ export const updateUser = async (user: {
 	id: string;
 	nickname: string;
 	api: string | null;
-	blocked: boolean;
+	banned: boolean;
 }) => {
 	try {
 		await sql`update users set ${sql(user)} where id = ${user.id}`;
@@ -105,10 +119,10 @@ export type TransactionType = {
 		| 'INVALID_AMOUNT'
 		| 'INVALID_OPERATION'
 		| 'SENDER_NOT_FOUND'
-		| 'SENDER_IS_BLOCKED'
+		| 'SENDER_IS_BANNED'
 		| 'NO_COST'
 		| 'RECEIVER_NOT_FOUND'
-		| 'RECEIVER_IS_BLOCKED'
+		| 'RECEIVER_IS_BANNED'
 		| 'SUCCESS';
 	transaction_id: string | null;
 };

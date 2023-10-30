@@ -1,8 +1,11 @@
-import { getUser } from '$lib/server';
+import { calculateBalance, getUser } from '$lib/server';
 
 export async function load({ cookies, request }) {
-	// const user = await getUser(cookies, '/bank');
+	const user = await getUser(cookies);
 
-	// console.log(user);
-	return {};
+	const balance = await calculateBalance(user.id);
+
+	return {
+		balance
+	};
 }

@@ -1,6 +1,14 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { alertUtility, hideMainButton, showBackButton, showMainButton } from '$lib/utilities';
+	import {
+		alertUtility,
+		getDateString,
+		hideMainButton,
+		months,
+		showBackButton,
+		showMainButton,
+		type DateType
+	} from '$lib/utilities';
 	import { onMount } from 'svelte';
 	import { writable } from 'svelte/store';
 
@@ -13,16 +21,10 @@
 	let addressee_id: number;
 	let date: string | null = null;
 
-	let balance = 68;
-	let selectedTransactionIndex = -1;
+	export let data;
 
-	type DateType = {
-		day: number;
-		month: number;
-		year: number;
-		hour: number;
-		minute: number;
-	};
+	let balance = data.balance;
+	let selectedTransactionIndex = -1;
 
 	let transactions = writable<
 		{
@@ -82,48 +84,9 @@
 		}
 	]);
 
-	const months = [
-		'січня',
-		'лютого',
-		'березня',
-		'квітня',
-		'травня',
-		'червня',
-		'липня',
-		'серпня',
-		'вересня',
-		'жовтня',
-		'листопада',
-		'грудня'
-	];
-
-	const getDateString = (date: DateType) => {
-		const now = new Date();
-
-		const dayOfMonth = now.getDate();
-		const monthIndex = now.getMonth();
-		const monthText = months[monthIndex];
-		const year = now.getFullYear();
-
-		if (date.month === monthIndex + 1 && date.year === year) {
-			if (dayOfMonth === date.day) {
-				return 'сьогодні';
-			}
-
-			if (Math.abs(dayOfMonth - date.day) === 1) {
-				return 'вчора';
-			}
-		}
-
-		let result = `${dayOfMonth} ${monthText}`;
-		if (date.year !== year) {
-			result += ` ${date.year}`;
-		}
-
-		return result;
-	};
-
-	onMount(() => showBackButton(() => goto('/')));
+	onMount(() => {
+		showBackButton(() => goto('/'));
+	});
 </script>
 
 <header class="px-4 py-2">

@@ -38,7 +38,7 @@ export async function POST({ request }) {
 		return text('Не авторизовані');
 	}
 
-	if (user.blocked) {
+	if (user.banned) {
 		await telegram('sendMessage', {
 			chat_id,
 			text: '⛔️ Ви заблоковані в системі',
@@ -126,10 +126,10 @@ export async function POST({ request }) {
 		if (blockMatches && minecraftNicknameRegex.test(blockMatches[2])) {
 			const find = await findUserByNickname(blockMatches[2]);
 			if (find && !find.admin) {
-				find.blocked = /^З/.test(data.message.text);
+				find.banned = /^З/.test(data.message.text);
 				await updateUser(find);
 
-				if (find.blocked) {
+				if (find.banned) {
 					await telegram('setChatMenuButton', {
 						chat_id: find.id,
 						menu_button: {
@@ -142,13 +142,13 @@ export async function POST({ request }) {
 
 				await telegram('sendMessage', {
 					chat_id: find.id,
-					text: `${find.blocked ? '⛔' : '🔓'} Вас було ${find.blocked ? 'за' : 'роз'}блоковано`
+					text: `${find.banned ? '⛔' : '🔓'} Вас було ${find.banned ? 'за' : 'роз'}блоковано`
 				});
 
 				await telegram('sendMessage', {
 					chat_id,
-					text: `${find.blocked ? '⛔' : '🔓'} <code>${find.nickname}</code> ${
-						find.blocked ? 'за' : 'роз'
+					text: `${find.banned ? '⛔' : '🔓'} <code>${find.nickname}</code> ${
+						find.banned ? 'за' : 'роз'
 					}блоковано`,
 					parse_mode: 'HTML'
 				});

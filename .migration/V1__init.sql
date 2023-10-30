@@ -3,7 +3,7 @@ CREATE TABLE users (
   nickname VARCHAR(16) UNIQUE NOT NULL,
   api VARCHAR(32) DEFAULT NULL,
   admin BOOLEAN DEFAULT FALSE NOT NULL,
-  blocked BOOLEAN DEFAULT FALSE NOT NULL
+  banned BOOLEAN DEFAULT FALSE NOT NULL
 );
 
 INSERT INTO users (id, nickname, admin)
@@ -106,8 +106,8 @@ BEGIN
     END IF;
     
     -- Перевірка, чи відправник заблокований
-    IF (SELECT blocked FROM users WHERE id = sender_id) THEN
-      status := 'SENDER_IS_BLOCKED';
+    IF (SELECT banned FROM users WHERE id = sender_id) THEN
+      status := 'SENDER_IS_BANNED';
       RETURN;
     END IF;
   
@@ -126,8 +126,8 @@ BEGIN
     END IF;
     
     -- Перевірка, чи отримувач заблокований
-    IF (SELECT blocked FROM users WHERE id = receiver_id) THEN
-      status := 'RECEIVER_IS_BLOCKED';
+    IF (SELECT banned FROM users WHERE id = receiver_id) THEN
+      status := 'RECEIVER_IS_BANNED';
       RETURN;
     END IF;
   END IF;
@@ -163,8 +163,8 @@ BEGIN
   END IF;
 
   -- Перевірка, чи користувач заблокований
-  IF (SELECT blocked FROM users WHERE id = user_id) THEN
-    status := 'USER_BLOCKED';
+  IF (SELECT banned FROM users WHERE id = user_id) THEN
+    status := 'USER_BANNED';
     RETURN;
   END IF;
 
