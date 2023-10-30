@@ -100,12 +100,17 @@ export type DateType = {
 };
 
 export const getDateString = (date: DateType) => {
-	const now = new Date();
+	const timeZone = 'Europe/Kiev';
+	const options = { timeZone, hour12: false };
 
-	const dayOfMonth = now.getDate();
-	const monthIndex = now.getMonth();
+	const now = new Date().toLocaleString('en-US', options);
+
+	const parsedDate = new Date(now);
+
+	const dayOfMonth = parsedDate.getDate();
+	const monthIndex = parsedDate.getMonth();
 	const monthText = months[monthIndex];
-	const year = now.getFullYear();
+	const year = parsedDate.getFullYear();
 
 	if (date.month === monthIndex + 1 && date.year === year) {
 		if (dayOfMonth === date.day) {
@@ -127,10 +132,15 @@ export const getDateString = (date: DateType) => {
 
 export type TransactionItemType = {
 	id: number;
+	emoji: string;
+	sender_nickname: string;
+	receiver_nickname: string;
+	business_name: string;
 	nickname: string;
 	amount: number;
 	comment: string;
 	date: DateType;
+	date_string: string;
 };
 
 export type PaginationType<TItem> = {

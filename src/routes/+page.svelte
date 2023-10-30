@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { PUBLIC_URL_DONATE } from '$env/static/public';
-	import { hideBackButton } from '$lib/utilities';
+	import { hideBackButton, hideMainButton } from '$lib/utilities';
 	import { onMount } from 'svelte';
 
 	export let data;
@@ -9,12 +9,18 @@
 	const button =
 		'p-3 w-full block bg-tg-secondary-bg-color hover:bg-tg-button-color text-center rounded';
 
-	onMount(() => hideBackButton());
+	onMount(() => {
+		hideBackButton();
+		hideMainButton();
+	});
 </script>
 
 <div class="p-4">
 	<blockquote class="mb-4 p-2 rounded border border-tg-hint-color">
-		👋 Вітаю, <b>{data.nickname}</b>!
+		<div>👋 Вітаю, <b>{data.nickname}</b>!</div>
+		{#if data.emoji && data.business_name}
+			<div>💼 Це бізнес рахунок, <b>{data.emoji} {data.business_name}</b>!</div>
+		{/if}
 	</blockquote>
 	<div class="{row} mb-2">
 		<a href="/bank" class={button}>
@@ -44,4 +50,8 @@
 			<span>Підтримати</span>
 		</a>
 	</div>
+	<blockquote class="my-4 text-tg-hint-color text-sm text-center">
+		{data.quote}
+		<button on:click={() => location.reload()}>🔄</button>
+	</blockquote>
 </div>

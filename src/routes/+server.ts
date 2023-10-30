@@ -1,7 +1,9 @@
 import { TG_TOKEN, URL_PANEL } from '$env/static/private';
 import {
+	findTransactionById,
 	findUserById,
 	findUserByNickname,
+	getRandomQuote,
 	insertUser,
 	telegram,
 	transferMoney,
@@ -62,7 +64,7 @@ export async function POST({ request }) {
 			}
 		});
 
-	if (user.admin && data.message) {
+	if (user.admin && data?.message?.text) {
 		const minecraftNicknameRegex = /^[a-zA-Z0-9_]{1,16}$/;
 
 		const registerMatches = data.message.text.match(/^Зареєструвати (\w+) (\d+)$/);
@@ -178,16 +180,78 @@ export async function POST({ request }) {
 				}
 			}
 		}
+
+		const removeBusinnessMatches = data.message.text.match(/^Прибрати інформацію бізнесу (\w+)/);
+		if (removeBusinnessMatches && minecraftNicknameRegex.test(removeBusinnessMatches[1])) {
+			const find = await findUserByNickname(removeBusinnessMatches[1]);
+			if (find) {
+				find.emoji = null;
+				find.business_name = null;
+				await updateUser(find);
+				await telegram('sendMessage', {
+					chat_id,
+					text: `✅ У <code>${find.nickname}</code> було прибрано бізнес інформацію`,
+					parse_mode: 'HTML'
+				});
+				return text('Прибрати бізнес інформацію');
+			}
+		}
+
+		const addBusinnessMatches = data.message.text.match(
+			/^Додати інформацію бізнесу (\w+) (.+) (.+)/
+		);
+		if (addBusinnessMatches && minecraftNicknameRegex.test(addBusinnessMatches[1])) {
+			const find = await findUserByNickname(addBusinnessMatches[1]);
+			if (find) {
+				find.emoji = addBusinnessMatches[2];
+				find.business_name = addBusinnessMatches[3];
+				await updateUser(find);
+				await telegram('sendMessage', {
+					chat_id,
+					text: `✅ У <code>${find.nickname}</code> було додано бізнес інформацію`,
+					parse_mode: 'HTML'
+				});
+				return text('Додати бізнес інформацію');
+			}
+		}
+
+		const transactionMatches = data.message.text.match(/^Транзакція (\d+)/);
+		if (transactionMatches) {
+			const transaction = await findTransactionById(transactionMatches[1]);
+			if (transaction) {
+				console.log(transaction);
+				await telegram('sendMessage', {
+					chat_id,
+					text:
+						`📤 Відправник: <code>${transaction.sender_nickname}</code>\n` +
+						`📥 Отримувач: <code>${transaction.receiver_nickname}</code>\n` +
+						`📅 Дата: <code>${transaction.date_string}</code>\n` +
+						`💰 Сума: <code>${transaction.amount}</code> ₴\n` +
+						`💬 Коментар: ${transaction.comment}`,
+					parse_mode: 'HTML'
+				});
+				return text('Інформація пр транзакцію');
+			}
+		}
 	}
 
 	await showPanel(user.id);
 
+	const quote = await getRandomQuote();
+
 	await telegram('sendMessage', {
 		chat_id,
-		text: `👋 Привіт <code>${user.nickname}</code>, натисніть на кнопку 🎛️ <code>Zyun Банк</code> щоб отримати доступ до всього функціоналу`,
+		text: `🚪 Натисніть кнопку щоб перейти до меню банку\n\n` + `💬 "<i>${quote}"</i>`,
 		parse_mode: 'HTML',
 		reply_markup: {
-			remove_keyboard: true
+			inline_keyboard: [
+				[
+					{
+						web_app: { url: `${URL_PANEL}/bank` },
+						text: '🏦 Zyun Банк'
+					}
+				]
+			]
 		}
 	});
 

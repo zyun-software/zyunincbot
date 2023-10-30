@@ -98,7 +98,7 @@
 				? 'bg-tg-button-color'
 				: 'bg-tg-secondary-bg-color'}">🔍 Фільтр</button
 		>
-		<a href="/bank/invoices" class="p-3 rounded bg-tg-secondary-bg-color text-center">📑 Рахунок</a>
+		<a href="/bank/invoices" class="p-3 rounded bg-tg-secondary-bg-color text-center">📑 Чек</a>
 	</nav>
 	<form
 		method="post"
@@ -132,8 +132,8 @@
 				required
 			>
 				<option value={0}>Zyun Банк</option>
-				{#each addressees ?? [] as { id, nickname }}
-					<option value={id}>{nickname}</option>
+				{#each addressees ?? [] as { id, nickname, business_name }}
+					<option value={id}>{business_name ?? nickname}</option>
 				{/each}
 			</select>
 		</fieldset>
@@ -217,13 +217,13 @@
 				>
 					<option value="-1">Будь-який</option>
 					<option value="0">Zyun Банк</option>
-					{#each addressees ?? [] as { id, nickname }}
-						<option value={id}>{nickname}</option>
+					{#each addressees ?? [] as { id, nickname, business_name }}
+						<option value={id}>{business_name ?? nickname}</option>
 					{/each}
 				</select>
 			</fieldset>
 			<fieldset class="grid grid-cols-2 items-center">
-				<label for="date">📅 Починаючи з</label>
+				<label for="date">📅 Від</label>
 				<input
 					id="date"
 					name="date"
@@ -237,7 +237,7 @@
 		<button class="hidden" bind:this={filterButton} />
 	</form>
 </header>
-<section class="p-2">
+<section class="p-4">
 	{#if $transactions.length === 0}
 		<div class="my-4 text-tg-hint-color text-sm text-center">🧐 Транзакції не знайдено</div>
 	{/if}
@@ -247,34 +247,34 @@
 				{getDateString(transaction.date)}
 			</div>
 		{/if}
-		<div class="rounded {selectedTransactionIndex === i ? '' : 'hover:'}bg-tg-secondary-bg-color">
-			<div
-				class="flex items-center p-2 space-x-4 text-xl"
+		<div
+			class="rounded my-6 {selectedTransactionIndex === i ? ' ' : 'hover:'}bg-tg-secondary-bg-color"
+		>
+			<button
+				class="flex items-center space-x-4 w-full text-left text-xl {selectedTransactionIndex === i
+					? 'p-4'
+					: ''} transition-all delay-100"
 				on:click={() => (selectedTransactionIndex = selectedTransactionIndex === i ? -1 : i)}
-				on:keydown={() => {}}
-				role="button"
 				tabindex="0"
 			>
-				{#if transaction.nickname === 'Zyun Банк'}
-					<div class="text-center w-12">
-						<span class="text-4xl">🏦</span>
-					</div>
+				{#if transaction.nickname === 'Zyun Банк' || !!transaction.emoji}
+					<span class="text-center w-12 text-4xl">{transaction.emoji ?? '🏦'}</span>
 				{:else}
 					<img src="https://cravatar.eu/helmhead/{transaction.nickname}" class="w-12" alt="" />
 				{/if}
-				<span class="flex-grow">{transaction.nickname}</span>
+				<span class="flex-grow">{transaction.business_name ?? transaction.nickname}</span>
 				<span class={transaction.amount >= 0 ? 'text-green-500' : ''}>{transaction.amount}</span>
-			</div>
-			{#if selectedTransactionIndex === i}
-				<table class="table-auto w-full">
+			</button>
+			<div class={selectedTransactionIndex === i ? 'px-4 pb-4' : ''}>
+				<table class="table-auto w-full{selectedTransactionIndex === i ? '' : ' hidden'}">
 					<tbody>
 						<tr>
-							<td class="py-2 px-4 font-semibold">🆔&nbsp;Код:</td>
-							<td class="py-2 px-4">{transaction.id}</td>
+							<td class=" font-semibold">🆔&nbsp;Код</td>
+							<td>{transaction.id}</td>
 						</tr>
 						<tr>
-							<td class="py-2 px-4 font-semibold">📅&nbsp;Дата:</td>
-							<td class="py-2 px-4">
+							<td class=" font-semibold">📅&nbsp;Дата</td>
+							<td>
 								{transaction.date.day}
 								{months[transaction.date.month - 1]}
 								{transaction.date.year},
@@ -285,12 +285,12 @@
 							</td>
 						</tr>
 						<tr>
-							<td class="py-2 px-4 font-semibold align-top">💬&nbsp;Коментар:</td>
-							<td class="py-2 px-4">{transaction.comment}</td>
+							<td class=" font-semibold align-top">💬&nbsp;Коментар</td>
+							<td>{transaction.comment}</td>
 						</tr>
 					</tbody>
 				</table>
-			{/if}
+			</div>
 		</div>
 	{/each}
 </section>
@@ -301,7 +301,7 @@
 				filterPage++;
 				setTimeout(() => filterButton.click(), 10);
 			}}
-			class="mt-4 mb-2 p-3 rounded bg-tg-secondary-bg-color text-center hover:bg-tg-button-color block w-full"
+			class="mb-2 p-3 rounded bg-tg-secondary-bg-color text-center hover:bg-tg-button-color block w-full"
 			>🔄 Завантажити ще</button
 		>
 	</footer>

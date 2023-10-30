@@ -40,6 +40,8 @@ export const sql = postgres({
 
 export type UserType = {
 	id: string;
+	emoji: string | null;
+	business_name: string | null;
 	nickname: string;
 	api: string | null;
 	admin: boolean;
@@ -54,6 +56,21 @@ export const findUserById = async (id: string) => {
 		}
 
 		return users[0];
+	} catch {
+		return null;
+	}
+};
+
+export const getRandomQuote = async () => {
+	try {
+		const quotes = await sql<
+			{ id: string; text: string }[]
+		>`select * from quotes order by random() limit 1`;
+		if (quotes.length !== 1) {
+			return null;
+		}
+
+		return quotes[0].text;
 	} catch {
 		return null;
 	}
@@ -90,7 +107,9 @@ export const calculateBalance = async (id: string) => {
 
 export const getUsersIgnoreId = async (id: string) => {
 	try {
-		const users = await sql<UserType[]>`select * from users where id <> ${id} order by nickname`;
+		const users = await sql<
+			UserType[]
+		>`select * from users where id <> ${id} and not banned order by business_name, nickname`;
 
 		return users;
 	} catch {
@@ -110,6 +129,8 @@ export const getAdmins = async () => {
 
 export const updateUser = async (user: {
 	id: string;
+	emoji: string | null;
+	business_name: string | null;
 	nickname: string;
 	api: string | null;
 	banned: boolean;
@@ -125,6 +146,128 @@ export const insertUser = async (user: { id: string; nickname: string }) => {
 	} catch {}
 };
 
+export type ProductType = {
+	id: string;
+	user_id?: string;
+	name: string;
+	description: string;
+	stack: number;
+	price: number;
+	quantity: number;
+};
+
+export const insertProduct = async (product: ProductType) => {
+	try {
+		product.name = clearString(product.name);
+		product.description = clearString(product.description);
+		await sql`insert into products ${sql(
+			product,
+			'user_id',
+			'name',
+			'description',
+			'stack',
+			'price',
+			'quantity'
+		)}`;
+	} catch {}
+};
+
+export const updateProduct = async (product: ProductType) => {
+	try {
+		product.name = clearString(product.name);
+		product.description = clearString(product.description);
+		await sql`update products set ${sql(
+			product,
+			'name',
+			'description',
+			'stack',
+			'price',
+			'quantity'
+		)} where id = ${product.id}`;
+	} catch {}
+};
+
+export const deleteProduct = async (id: string) => {
+	try {
+		await sql`delete from products where id = ${id}`;
+	} catch {}
+};
+
+export const getProducts = async (user_id: string, name: string, page: number) => {
+	page--;
+	const result: PaginationType<ProductType> = {
+		items: [],
+		more: false
+	};
+
+	try {
+		const items = await sql<ProductType[]>`
+			select *
+			from products
+			where user_id = ${user_id} and name ilike ${`%${name}%`} 
+			order by id desc
+			offset ${page * perPage}
+			limit ${perPage + 1}
+		`;
+
+		if (items.length > perPage) {
+			items.pop();
+			result.more = true;
+		}
+
+		result.items = items;
+	} catch {}
+
+	return result;
+};
+
+export const getProduct = async (id: string) => {
+	try {
+		const products = await sql<ProductType[]>`select * from products where id = ${id}`;
+		if (products.length !== 1) {
+			return null;
+		}
+
+		return products[0];
+	} catch {
+		return null;
+	}
+};
+
+export async function findTransactionById(id: string) {
+	try {
+		const results = await sql<TransactionItemType[]>`
+			select
+					t.id,
+					case
+						when us.nickname is not null then us.nickname
+						else 'Zyun Банк'
+					end sender_nickname,
+					case
+						when ur.nickname is not null then ur.nickname
+						else 'Zyun Банк'
+					end receiver_nickname,
+					t.amount,
+					case
+						when t.comment is null then 'не вказано'
+						else t.comment
+					end comment,
+					to_char(t.timestamp, 'DD.MM.YYYY HH24:MI') AS date_string
+				from transactions t
+				left join users us on us.id = t.sender_id
+				left join users ur on ur.id = t.receiver_id
+				where t.id = ${id}`;
+
+		if (results.length !== 1) {
+			return 0;
+		}
+
+		return results[0];
+	} catch {
+		return 0;
+	}
+}
+
 export type TransactionType = {
 	status:
 		| 'INVALID_AMOUNT'
@@ -139,6 +282,8 @@ export type TransactionType = {
 	transaction_id: string | null;
 };
 
+export const clearString = (value: string) => value.replace(/\s+/g, ' ').trim().slice(0, 200);
+
 export const transferMoney = async (
 	sender_id: string | null,
 	receiver_id: string | null,
@@ -150,7 +295,7 @@ export const transferMoney = async (
 		transaction_id: null
 	};
 	try {
-		const cleanedString = comment.replace(/\s+/g, ' ').trim().slice(0, 200);
+		const cleanedString = clearString(comment);
 		const safeComment = cleanedString.length === 0 ? null : cleanedString;
 
 		let transaction = await sql<
@@ -197,7 +342,7 @@ export const transferMoney = async (
 	}
 };
 
-const perPage = 10;
+const perPage = 2;
 
 export const loadTransactions = async (
 	id: string,
@@ -215,6 +360,14 @@ export const loadTransactions = async (
 		const items = await sql<TransactionItemType[]>`
 			select
 				t.id,
+				case
+					when t.sender_id = ${id} then ur.emoji 
+					else us.emoji
+				end emoji,
+				case
+					when t.sender_id = ${id} then ur.business_name
+					else us.business_name
+				end business_name,
 				case
 					when t.sender_id = ${id} then -amount 
 					else amount 
@@ -256,7 +409,7 @@ export const loadTransactions = async (
 					)
 					or ${code} = cast(t.id as text)
 				)
-			order by timestamp desc
+			order by id desc
 			offset ${page * perPage}
 			limit ${perPage + 1}
 		`;

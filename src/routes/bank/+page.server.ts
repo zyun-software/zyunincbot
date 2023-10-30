@@ -19,7 +19,8 @@ export async function load({ request, cookies }) {
 	const addressees = (await getUsersIgnoreId(user.id)).map((user) => {
 		return {
 			id: user.id,
-			nickname: user.nickname
+			nickname: user.nickname,
+			business_name: user.business_name
 		};
 	});
 
@@ -95,7 +96,7 @@ export const actions = {
 				};
 			case 'RECEIVER_IS_BANNED':
 				return {
-					transferMoneyResult: '😶 Отримувача заблокован'
+					transferMoneyResult: '😶 Отримувача заблоковано'
 				};
 			case 'SUCCESS':
 				return {
