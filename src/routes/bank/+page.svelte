@@ -53,8 +53,8 @@
 	};
 </script>
 
-<header class="px-4 py-2">
-	<div class="mb-2 flex items-center">
+<header class="px-4 mt-10">
+	<div class="flex items-center justify-center mb-8">
 		<span class="text-4xl font-bold mr-2">{balanceFormatted}</span>
 		<span class="text-3xl mr-2">₴</span>
 		<button
