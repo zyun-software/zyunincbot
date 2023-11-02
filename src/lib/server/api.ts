@@ -342,7 +342,7 @@ export const transferMoney = async (
 	}
 };
 
-const perPage = 2;
+const perPage = 10;
 
 export const loadTransactions = async (
 	id: string,

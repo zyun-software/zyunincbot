@@ -116,6 +116,11 @@
 		</form>
 
 		<section>
+			{#if ($products ?? []).length === 0}
+				<div class="mt-4 text-tg-hint-color text-sm text-center">
+					🧐 {filterName === '' ? 'У вас відсутні товари' : 'Товари за вказаною назвою не знайдено'}
+				</div>
+			{/if}
 			{#each $products ?? [] as { id, name, description, stack, price, quantity }, inx}
 				<article class="mb-2 bg-tg-secondary-bg-color p-4 rounded">
 					<button
