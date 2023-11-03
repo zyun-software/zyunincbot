@@ -37,13 +37,13 @@
 		</a>
 	</div>
 	<div class={row}>
-		<a href="/help" class={button}>
-			<span class="block mb-2 text-3xl">❓</span>
-			<span>Допомога</span>
-		</a>
 		<a href="/api" class={button}>
 			<span class="block mb-2 text-3xl">🤖</span>
 			<span>API</span>
+		</a>
+		<a href="/help" class={button}>
+			<span class="block mb-2 text-3xl">❓</span>
+			<span>Допомога</span>
 		</a>
 		<a href={PUBLIC_URL_DONATE} class={button}>
 			<span class="block mb-2 text-3xl">💸</span>

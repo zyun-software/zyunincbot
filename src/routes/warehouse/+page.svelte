@@ -95,9 +95,9 @@
 			<input type="hidden" name="name" value={filterName} />
 			<button class="hidden" bind:this={loadMoreButton} />
 		</form>
-		<form method="post" action="?/loadList">
+		<form method="post" action="?/loadList" class="mb-4">
 			<button class="hidden" bind:this={filterButton} />
-			<fieldset class="grid grid-cols-3 items-center mb-4">
+			<fieldset class="grid grid-cols-3 items-center">
 				<label for="filter_name">🏷️ Назва</label>
 				<input
 					id="filter_name"
@@ -190,7 +190,7 @@
 									value={quantity}
 									min={0}
 									class="p-2 col-span-2 bg-tg-bg-color rounded w-full"
-									placeholder="Запас товару на складі"
+									placeholder="Запас стаків на складі"
 									required
 								/>
 							</fieldset>
@@ -287,7 +287,7 @@
 					name="quantity"
 					min={0}
 					class="p-2 col-span-2 bg-tg-secondary-bg-color rounded w-full"
-					placeholder="Запас товару на складі"
+					placeholder="Запас стаків на складі"
 					required
 				/>
 			</fieldset>

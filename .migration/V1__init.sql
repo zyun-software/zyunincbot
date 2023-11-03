@@ -1,9 +1,9 @@
 CREATE TABLE users (
   id BIGINT PRIMARY KEY NOT NULL,
   nickname VARCHAR(16) UNIQUE NOT NULL,
-  emoji VARCHAR(5),
-  business_name VARCHAR(16),
-  api VARCHAR(32) DEFAULT NULL,
+  emoji TEXT,
+  business_name TEXT,
+  api TEXT DEFAULT NULL,
   admin BOOLEAN DEFAULT FALSE NOT NULL,
   banned BOOLEAN DEFAULT FALSE NOT NULL
 );

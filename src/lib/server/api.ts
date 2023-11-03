@@ -135,9 +135,13 @@ export const updateUser = async (user: {
 	api: string | null;
 	banned: boolean;
 }) => {
+	console.log(user);
+
 	try {
 		await sql`update users set ${sql(user)} where id = ${user.id}`;
-	} catch {}
+	} catch (e: any) {
+		console.log(e);
+	}
 };
 
 export const insertUser = async (user: { id: string; nickname: string }) => {

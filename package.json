@@ -33,6 +33,7 @@
 		"@types/node": "^20.8.9",
 		"@types/telegram-web-app": "^6.9.2",
 		"axios": "^1.6.0",
-		"postgres": "^3.4.2"
+		"postgres": "^3.4.2",
+		"uuid": "^9.0.1"
 	}
 }
