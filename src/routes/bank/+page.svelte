@@ -98,7 +98,7 @@
 				? 'bg-tg-button-color'
 				: 'bg-tg-secondary-bg-color'}">🔍 Фільтр</button
 		>
-		<a href="/bank/invoices" class="p-3 rounded bg-tg-secondary-bg-color text-center">📑 Чек</a>
+		<a href="/bank/order" class="p-3 rounded bg-tg-secondary-bg-color text-center">📑 Чек</a>
 	</nav>
 	<form
 		method="post"

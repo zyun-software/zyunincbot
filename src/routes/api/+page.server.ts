@@ -1,7 +1,7 @@
 import { getUser, updateUser } from '$lib/server';
 import { v4 as uuidv4 } from 'uuid';
 
-export async function load({ request, cookies }) {
+export async function load({ cookies }) {
 	if (!!cookies.get('genetateTokenAction')) {
 		cookies.delete('genetateTokenAction');
 		return {};
@@ -15,7 +15,7 @@ export async function load({ request, cookies }) {
 }
 
 export const actions = {
-	genetateToken: async ({ request, cookies }) => {
+	genetateToken: async ({ cookies }) => {
 		cookies.set('genetateTokenAction', 'true');
 		const user = await getUser(cookies);
 

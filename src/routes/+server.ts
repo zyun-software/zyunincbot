@@ -1,5 +1,6 @@
 import { TG_TOKEN, URL_PANEL } from '$env/static/private';
 import {
+	calculateBalance,
 	findTransactionById,
 	findUserById,
 	findUserByNickname,
@@ -65,10 +66,8 @@ export async function POST({ request }) {
 		});
 
 	if (user.admin && data?.message?.text) {
-		const minecraftNicknameRegex = /^[a-zA-Z0-9_]{1,16}$/;
-
-		const registerMatches = data.message.text.match(/^Зареєструвати (\w+) (\d+)$/);
-		if (registerMatches && minecraftNicknameRegex.test(registerMatches[1])) {
+		const registerMatches = data.message.text.match(/^Зареєструвати ([a-zA-Z0-9_]{1,16}) (\d+)$/);
+		if (registerMatches) {
 			const findByNickname = await findUserByNickname(registerMatches[1]);
 			const findById = await findUserById(registerMatches[2]);
 			if (!findById && !findByNickname) {
@@ -95,12 +94,10 @@ export async function POST({ request }) {
 			}
 		}
 
-		const renameMatches = data.message.text.match(/^Перейменувати (\w+) (\w+)$/);
-		if (
-			renameMatches &&
-			minecraftNicknameRegex.test(renameMatches[1]) &&
-			minecraftNicknameRegex.test(renameMatches[2])
-		) {
+		const renameMatches = data.message.text.match(
+			/^Перейменувати ([a-zA-Z0-9_]{1,16}) ([a-zA-Z0-9_]{1,16})$/
+		);
+		if (renameMatches) {
 			const findCur = await findUserByNickname(renameMatches[1]);
 			const findRe = await findUserByNickname(renameMatches[2]);
 			if (findCur && !findRe) {
@@ -124,8 +121,8 @@ export async function POST({ request }) {
 			}
 		}
 
-		const blockMatches = data.message.text.match(/^(За|Роз)блокувати (\w+)$/);
-		if (blockMatches && minecraftNicknameRegex.test(blockMatches[2])) {
+		const blockMatches = data.message.text.match(/^(За|Роз)блокувати ([a-zA-Z0-9_]{1,16})$/);
+		if (blockMatches) {
 			const find = await findUserByNickname(blockMatches[2]);
 			if (find && !find.admin) {
 				find.banned = /^З/.test(data.message.text);
@@ -159,9 +156,9 @@ export async function POST({ request }) {
 			}
 		}
 
-		const transferMoneyMatches = data.message.text.match(/^Нарахувати (\w+) (\d+)/);
+		const transferMoneyMatches = data.message.text.match(/^Нарахувати ([a-zA-Z0-9_]{1,16}) (\d+)/);
 
-		if (transferMoneyMatches && minecraftNicknameRegex.test(transferMoneyMatches[1])) {
+		if (transferMoneyMatches) {
 			const amount = parseInt(transferMoneyMatches[2]);
 			const receiver = await findUserByNickname(transferMoneyMatches[1]);
 			if (amount > 0 && receiver) {
@@ -181,8 +178,10 @@ export async function POST({ request }) {
 			}
 		}
 
-		const removeBusinnessMatches = data.message.text.match(/^Прибрати інформацію бізнесу (\w+)/);
-		if (removeBusinnessMatches && minecraftNicknameRegex.test(removeBusinnessMatches[1])) {
+		const removeBusinnessMatches = data.message.text.match(
+			/^Прибрати інформацію бізнесу ([a-zA-Z0-9_]{1,16})/
+		);
+		if (removeBusinnessMatches) {
 			const find = await findUserByNickname(removeBusinnessMatches[1]);
 			if (find) {
 				find.emoji = null;
@@ -197,10 +196,24 @@ export async function POST({ request }) {
 			}
 		}
 
+		const balanceMatches = data.message.text.match(/^Баланс ([a-zA-Z0-9_]{1,16})/);
+		if (balanceMatches) {
+			const find = await findUserByNickname(balanceMatches[1]);
+			if (find) {
+				const balance = await calculateBalance(find.id);
+				await telegram('sendMessage', {
+					chat_id,
+					text: `✅ Баланс <code>${find.nickname}</code> складає <code>${balance}</code> ₴`,
+					parse_mode: 'HTML'
+				});
+				return text('Переглягути баланс клієнта');
+			}
+		}
+
 		const addBusinnessMatches = data.message.text.match(
-			/^Додати інформацію бізнесу (\w+) (.+) (.+)/
+			/^Додати інформацію бізнесу ([a-zA-Z0-9_]{1,16}) (.+) (.+)/
 		);
-		if (addBusinnessMatches && minecraftNicknameRegex.test(addBusinnessMatches[1])) {
+		if (addBusinnessMatches) {
 			const find = await findUserByNickname(addBusinnessMatches[1]);
 			if (find) {
 				find.emoji = addBusinnessMatches[2];
@@ -219,7 +232,6 @@ export async function POST({ request }) {
 		if (transactionMatches) {
 			const transaction = await findTransactionById(transactionMatches[1]);
 			if (transaction) {
-				console.log(transaction);
 				await telegram('sendMessage', {
 					chat_id,
 					text:
@@ -232,6 +244,24 @@ export async function POST({ request }) {
 				});
 				return text('Інформація пр транзакцію');
 			}
+		}
+
+		if (data.message.text === 'Команди адміністратора') {
+			await telegram('sendMessage', {
+				chat_id,
+				text:
+					'<code>Зареєструвати</code> [<i>псевдонім</i>] [<i>код</i>]\n' +
+					'<code>Перейменувати</code> [<i>старий псевдонім</i>] [<i>новий псевдонім</i>]\n' +
+					'<code>Заблокувати</code> [<i>псевдонім</i>]\n' +
+					'<code>Розблокувати</code> [<i>псевдонім</i>]\n' +
+					'<code>Нарахувати</code> [<i>псевдонім</i>] [<i>сума</i>]\n' +
+					'<code>Прибрати інформацію бізнесу</code> [<i>псевдонім</i>]\n' +
+					'<code>Додати інформацію бізнесу</code> [<i>псевдонім</i>] [<i>emoji</i>] [<i>назва бізнесу</i>]\n' +
+					'<code>Баланс</code> [<i>псевдонім</i>]\n' +
+					'<code>Транзакція</code> [<i>псевдонім</i>]',
+				parse_mode: 'HTML'
+			});
+			return text('Команди адміністратора');
 		}
 	}
 

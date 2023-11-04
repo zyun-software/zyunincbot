@@ -316,6 +316,11 @@
   resolved "https://registry.yarnpkg.com/@types/telegram-web-app/-/telegram-web-app-6.9.2.tgz#1daf74e71d1f2c1f292dfa06d4344c67a8227b46"
   integrity sha512-cy+/HDcxbJBV+haRPc6TPyoGQPDNPfvBLAAfHQBaljvwZxkUzWs5Y1aa6H1iH07XJlYga8569hoH6myI5tPKJg==
 
+"@types/uuid@^9.0.6":
+  version "9.0.6"
+  resolved "https://registry.yarnpkg.com/@types/uuid/-/uuid-9.0.6.tgz#c91ae743d8344a54b2b0c691195f5ff5265f6dfb"
+  integrity sha512-BT2Krtx4xaO6iwzwMFUYvWBWkV2pr37zD68Vmp1CDV196MzczBRxuEpD6Pr395HAgebC/co7hOphs53r8V7jew==
+
 acorn@^8.10.0, acorn@^8.9.0:
   version "8.11.2"
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-8.11.2.tgz#ca0d78b51895be5390a5903c5b3bdcdaf78ae40b"

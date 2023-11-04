@@ -80,7 +80,7 @@ export const findUserByNickname = async (nickname: string) => {
 	try {
 		const users = await sql<
 			UserType[]
-		>`select * from users where lower(nickname) = lower(${nickname})`;
+		>`select * from users where lower(${nickname}) in (lower(nickname), lower(business_name))`;
 		if (users.length !== 1) {
 			return null;
 		}
@@ -135,8 +135,6 @@ export const updateUser = async (user: {
 	api: string | null;
 	banned: boolean;
 }) => {
-	console.log(user);
-
 	try {
 		await sql`update users set ${sql(user)} where id = ${user.id}`;
 	} catch (e: any) {

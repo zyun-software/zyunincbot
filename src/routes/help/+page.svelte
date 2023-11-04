@@ -6,4 +6,4 @@
 	onMount(() => showBackButton(() => goto('/')));
 </script>
 
-<h1>Допомога</h1>
+<div class="p-4">Тут буде допомога, можливо...</div>
