@@ -103,7 +103,7 @@
 			}}
 			class="rounded p-3 {activeTab === 'add' ? 'bg-tg-button-color' : 'bg-tg-secondary-bg-color'}"
 		>
-			📋 Додати
+			📋 Новий
 		</button>
 	</div>
 	{#if activeTab === 'list'}
@@ -272,7 +272,6 @@
 					});
 				});
 			}}
-			class="mb-2 p-3 rounded bg-tg-secondary-bg-color"
 		>
 			<fieldset class="grid grid-cols-3 gap-2 items-center mb-2">
 				<label for="name">🏷️ Назва</label>
@@ -281,7 +280,7 @@
 					type="text"
 					bind:value={createForm.name}
 					placeholder="Назва"
-					class="p-2 rounded bg-tg-bg-color col-span-2"
+					class="p-2 bg-tg-secondary-bg-color rounded col-span-2"
 					required
 				/>
 			</fieldset>
@@ -292,7 +291,7 @@
 					type="number"
 					bind:value={createForm.price}
 					placeholder="Ціна"
-					class="p-2 rounded bg-tg-bg-color col-span-2"
+					class="p-2 bg-tg-secondary-bg-color rounded col-span-2"
 					min="1"
 					required
 				/>
@@ -304,18 +303,18 @@
 					type="number"
 					bind:value={createForm.quantity}
 					placeholder="Кількість"
-					class="p-2 rounded bg-tg-bg-color col-span-2"
+					class="p-2 bg-tg-secondary-bg-color rounded col-span-2"
 					min="1"
 					required
 				/>
 			</fieldset>
 			<fieldset class="grid grid-cols-3 mb-2">
-				<label for="description">📄 Опис</label>
+				<label class="mt-2" for="description">📄 Опис</label>
 				<textarea
 					id="description"
 					name="description"
 					bind:value={createForm.description}
-					class="p-2 bg-tg-bg-color rounded col-span-2"
+					class="p-2 bg-tg-secondary-bg-color rounded col-span-2"
 					placeholder="Опис"
 					required
 				/>

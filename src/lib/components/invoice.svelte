@@ -6,21 +6,24 @@
 </script>
 
 <div class="mb-2 p-3 bg-tg-secondary-bg-color rounded">
-	<button class="w-full text-left" on:click={() => {
-		id = invoice.id === id ? '' : invoice.id;
-	}}>
+	<button
+		class="w-full text-left"
+		on:click={() => {
+			id = invoice.id === id ? '' : invoice.id;
+		}}
+	>
 		<table class="table-auto w-full">
 			<tbody>
 				<tr>
-					<td>🆔 Код</td>
+					<td>🆔&nbsp;Код</td>
 					<td>{invoice.id}</td>
 				</tr>
 				<tr>
-					<td>📋 Виписав</td>
+					<td>📋&nbsp;Виписав</td>
 					<td>{invoice.name}</td>
 				</tr>
 				<tr>
-					<td>💰 Сума</td>
+					<td>💰&nbsp;Сума</td>
 					<td>
 						{invoice.items.reduce((accumulator, currentItem) => {
 							const product = currentItem.price * currentItem.quantity;
@@ -29,12 +32,12 @@
 					</td>
 				</tr>
 				<tr>
-					<td>{invoice.transaction_id === null ? '⏳' : '✅'} Статус</td>
+					<td>{invoice.transaction_id === null ? '⏳' : '✅'}&nbsp;Статус</td>
 					<td>{invoice.transaction_id === null ? 'Очікується оплата' : 'Оплачено'}</td>
 				</tr>
 				{#if invoice.transaction_id !== null}
 					<tr>
-						<td>💸 Оплатив</td>
+						<td>💸&nbsp;Оплатив</td>
 						<td>{invoice.payer_name}</td>
 					</tr>
 				{/if}
@@ -47,19 +50,19 @@
 				<table class="table-auto w-full">
 					<tbody>
 						<tr>
-							<td>🏷️ Назва</td>
+							<td class="align-top">🏷️&nbsp;Назва</td>
 							<td>{name}</td>
 						</tr>
 						<tr>
-							<td>💰 Ціна</td>
+							<td>💰&nbsp;Ціна</td>
 							<td>{price} ₴</td>
 						</tr>
 						<tr>
-							<td>🔢 Кількість</td>
+							<td>🔢&nbsp;Кількість</td>
 							<td>{quantity}</td>
 						</tr>
 						<tr>
-							<td>📄 Опис</td>
+							<td class="align-top">📄&nbsp;Опис</td>
 							<td>{description}</td>
 						</tr>
 					</tbody>

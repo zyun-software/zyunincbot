@@ -98,7 +98,7 @@
 		<form method="post" action="?/loadList" class="mb-4">
 			<button class="hidden" bind:this={filterButton} />
 			<fieldset class="grid grid-cols-3 items-center">
-				<label for="filter_name">🏷️ Назва</label>
+				<label for="filter_name">🏷️&nbsp;Назва</label>
 				<input
 					id="filter_name"
 					name="name"
@@ -128,12 +128,12 @@
 						on:click={() => (selectedInx = selectedInx === inx ? -1 : inx)}
 					>
 						<div class="grid grid-cols-3{selectedInx === inx ? '' : ' mb-2'}">
-							<div>#️⃣ Код</div>
+							<div>#️⃣&nbsp;Код</div>
 							<div class="col-span-2">{id}</div>
 						</div>
 						{#if selectedInx !== inx}
 							<div class="grid grid-cols-3">
-								<div>🏷️ Назва</div>
+								<div>🏷️&nbsp;Назва</div>
 								<div class="col-span-2">{name}</div>
 							</div>
 						{/if}
@@ -143,7 +143,7 @@
 							<input type="hidden" name="id" value={id} />
 							<input type="hidden" name="action" value="edit" bind:this={editAction} />
 							<fieldset class="grid grid-cols-3 items-center mb-2">
-								<label for="edit_name">🏷️ Назва</label>
+								<label for="edit_name">🏷️&nbsp;Назва</label>
 								<input
 									id="edit_name"
 									name="name"
@@ -155,7 +155,7 @@
 								/>
 							</fieldset>
 							<fieldset class="grid grid-cols-3 items-center mb-2">
-								<label for="edit_stack">🔢 Стак</label>
+								<label for="edit_stack">🔢&nbsp;Стак</label>
 								<input
 									id="edit_stack"
 									name="stack"
@@ -169,7 +169,7 @@
 								/>
 							</fieldset>
 							<fieldset class="grid grid-cols-3 items-center mb-2">
-								<label for="edit_price">💰 Ціна</label>
+								<label for="edit_price">💰&nbsp;Ціна</label>
 								<input
 									type="number"
 									id="edit_price"
@@ -182,7 +182,7 @@
 								/>
 							</fieldset>
 							<fieldset class="grid grid-cols-3 items-center mb-2">
-								<label for="edit_quantity">📦 Запас</label>
+								<label for="edit_quantity">📦&nbsp;Запас</label>
 								<input
 									type="number"
 									id="edit_quantity"
@@ -195,7 +195,7 @@
 								/>
 							</fieldset>
 							<fieldset class="grid grid-cols-3">
-								<label class="mt-2" for="edit_description">📄 Опис</label>
+								<label class="mt-2" for="edit_description">📄&nbsp;Опис</label>
 								<textarea
 									id="edit_description"
 									name="description"
@@ -244,7 +244,7 @@
 	{:else if active === 'add'}
 		<form method="post" action="?/add">
 			<fieldset class="grid grid-cols-3 items-center mb-2">
-				<label for="create_name">🏷️ Назва</label>
+				<label for="create_name">🏷️&nbsp;Назва</label>
 				<input
 					id="create_name"
 					name="name"
@@ -255,7 +255,7 @@
 				/>
 			</fieldset>
 			<fieldset class="grid grid-cols-3 items-center mb-2">
-				<label for="create_stack">🔢 Стак</label>
+				<label for="create_stack">🔢&nbsp;Стак</label>
 				<input
 					id="create_stack"
 					name="stack"
@@ -268,7 +268,7 @@
 				/>
 			</fieldset>
 			<fieldset class="grid grid-cols-3 items-center mb-2">
-				<label for="create_price">💰 Ціна</label>
+				<label for="create_price">💰&nbsp;Ціна</label>
 				<input
 					type="number"
 					id="create_price"
@@ -280,7 +280,7 @@
 				/>
 			</fieldset>
 			<fieldset class="grid grid-cols-3 items-center mb-2">
-				<label for="create_quantity">📦 Запас</label>
+				<label for="create_quantity">📦&nbsp;Запас</label>
 				<input
 					type="number"
 					id="create_quantity"
@@ -292,7 +292,7 @@
 				/>
 			</fieldset>
 			<fieldset class="grid grid-cols-3">
-				<label class="mt-2" for="create_description">📄 Опис</label>
+				<label class="mt-2" for="create_description">📄&nbsp;Опис</label>
 				<textarea
 					id="create_description"
 					name="description"
