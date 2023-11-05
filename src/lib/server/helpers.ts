@@ -1,7 +1,7 @@
 import { TG_ID, TG_TOKEN } from '$env/static/private';
 import { redirect, type Cookies } from '@sveltejs/kit';
 import { createHmac } from 'crypto';
-import { findUserById } from './api';
+import { createInvoice, findUserById, type InvoiceType } from './api';
 
 export const getUser = async (cookies: Cookies) => {
 	const initData = cookies.get('init-data') ?? '';
@@ -39,4 +39,51 @@ export const getUser = async (cookies: Cookies) => {
 	}
 
 	return user;
+};
+
+export const createInvoiceFromJson = async (json: string, user_id: string) => {
+	const result: {
+		success: boolean;
+		message: string;
+		id?: string;
+	} = {
+		success: false,
+		message: 'Невідома помилка'
+	};
+
+	try {
+		const items: InvoiceType = JSON.parse(json);
+		const invalidFormat = 'Невірний формат';
+		if (!Array.isArray(items)) {
+			result.message = invalidFormat;
+			return result;
+		}
+
+		for (const item of items) {
+			if (
+				typeof item !== 'object' ||
+				typeof item.name !== 'string' ||
+				typeof item.price !== 'number' ||
+				typeof item.quantity !== 'number' ||
+				typeof item.description !== 'string' ||
+				item.price < 1 ||
+				item.quantity < 1
+			) {
+				result.message = invalidFormat;
+				return result;
+			}
+		}
+
+		const id = await createInvoice(user_id, items);
+
+		if (id) {
+			result.success = true;
+			result.message = 'Успіх';
+			result.id = id;
+		}
+
+		return result;
+	} catch {
+		return result;
+	}
 };

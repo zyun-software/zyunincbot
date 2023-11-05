@@ -1,0 +1,70 @@
+<script lang="ts">
+	import type { InvoiceType } from '$lib/server';
+
+	export let invoice: InvoiceType;
+	export let id: string = '';
+</script>
+
+<div class="mb-2 p-3 bg-tg-secondary-bg-color rounded">
+	<button class="w-full text-left" on:click={() => {
+		id = invoice.id === id ? '' : invoice.id;
+	}}>
+		<table class="table-auto w-full">
+			<tbody>
+				<tr>
+					<td>🆔 Код</td>
+					<td>{invoice.id}</td>
+				</tr>
+				<tr>
+					<td>📋 Виписав</td>
+					<td>{invoice.name}</td>
+				</tr>
+				<tr>
+					<td>💰 Сума</td>
+					<td>
+						{invoice.items.reduce((accumulator, currentItem) => {
+							const product = currentItem.price * currentItem.quantity;
+							return accumulator + product;
+						}, 0)} ₴
+					</td>
+				</tr>
+				<tr>
+					<td>{invoice.transaction_id === null ? '⏳' : '✅'} Статус</td>
+					<td>{invoice.transaction_id === null ? 'Очікується оплата' : 'Оплачено'}</td>
+				</tr>
+				{#if invoice.transaction_id !== null}
+					<tr>
+						<td>💸 Оплатив</td>
+						<td>{invoice.payer_name}</td>
+					</tr>
+				{/if}
+			</tbody>
+		</table>
+	</button>
+	{#if id === invoice.id}
+		{#each invoice.items as { name, price, quantity, description }}
+			<div class="p-3 bg-tg-bg-color rounded mt-2">
+				<table class="table-auto w-full">
+					<tbody>
+						<tr>
+							<td>🏷️ Назва</td>
+							<td>{name}</td>
+						</tr>
+						<tr>
+							<td>💰 Ціна</td>
+							<td>{price} ₴</td>
+						</tr>
+						<tr>
+							<td>🔢 Кількість</td>
+							<td>{quantity}</td>
+						</tr>
+						<tr>
+							<td>📄 Опис</td>
+							<td>{description}</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		{/each}
+	{/if}
+</div>

@@ -286,6 +286,141 @@ export type TransactionType = {
 
 export const clearString = (value: string) => value.replace(/\s+/g, ' ').trim().slice(0, 200);
 
+export type InvoiceItemType = {
+	name: string;
+	price: number;
+	quantity: number;
+	description: string;
+};
+
+export type InvoiceType = {
+	id: string;
+	transaction_id: string;
+	payer_name: string;
+	user_id: string;
+	name: string;
+	items: InvoiceItemType[];
+};
+
+export const getInvoices = async (user_id: string, page: number) => {
+	page--;
+	const result: PaginationType<InvoiceType> = {
+		items: [],
+		more: false
+	};
+	try {
+		const items = await sql<(InvoiceType & { items: string })[]>`
+			select
+				i.id,
+				i.transaction_id,
+				case
+					when us.business_name is null then us.nickname
+					else us.business_name
+				end payer_name,
+				i.user_id,
+				case
+					when uc.business_name is null then uc.nickname
+					else uc.business_name
+				end name,
+				i.items
+			from invoices i
+			left join transactions t on t.id = i.transaction_id
+			left join users us on us.id = t.sender_id
+			left join users uc on uc.id = i.user_id
+			where ${user_id} = t.sender_id or ${user_id} = i.user_id
+			order by i.id desc
+			offset ${page * perPage}
+			limit ${perPage + 1}
+		`;
+
+		if (items.length > perPage) {
+			items.pop();
+			result.more = true;
+		}
+
+		result.items = items.map((item) => {
+			const items: InvoiceItemType[] = JSON.parse(item.items);
+
+			return {
+				...item,
+				items
+			};
+		});
+	} catch {}
+
+	return result;
+};
+
+export const findInvoice = async (id: string) => {
+	try {
+		const invoice = await sql<(InvoiceType & { items: string })[]>`
+			select
+				i.id,
+				i.transaction_id,
+				case
+					when us.business_name is null then us.nickname
+					else us.business_name
+				end payer_name,
+				i.user_id,
+				case
+					when uc.business_name is null then uc.nickname
+					else uc.business_name
+				end name,
+				i.items
+			from invoices i
+			left join transactions t on t.id = i.transaction_id
+			left join users us on us.id = t.sender_id
+			left join users uc on uc.id = i.user_id
+			where i.id = ${id}
+			order by i.id desc
+		`;
+
+		if (invoice.length !== 1) {
+			return null;
+		}
+
+		const items: InvoiceItemType[] = JSON.parse(invoice[0].items);
+
+		const result: InvoiceType = {
+			...invoice[0],
+			items
+		};
+
+		return result;
+	} catch {
+		return null;
+	}
+};
+
+export const createInvoice = async (user_id: string, items: object) => {
+	try {
+		const row = await sql<{ id: string }[]>`
+			insert into invoices
+				(user_id, items)
+			values
+				(${user_id}, ${JSON.stringify(items)})
+			returning id`;
+
+		return row[0].id ?? null;
+	} catch {
+		return null;
+	}
+};
+
+export const deleteInvoice = async (id: string) => {
+	try {
+		await sql`delete from invoices where id = ${id}`;
+	} catch {}
+};
+
+export const updateInvoice = async (id: string, transaction_id: string) => {
+	try {
+		await sql`update invoices set transaction_id = ${transaction_id} where id = ${id}`;
+	} catch (e: any) {
+		console.log(e);
+	}
+};
+
 export const transferMoney = async (
 	sender_id: string | null,
 	receiver_id: string | null,

@@ -269,11 +269,11 @@
 				<table class="table-auto w-full{selectedTransactionIndex === i ? '' : ' hidden'}">
 					<tbody>
 						<tr>
-							<td class=" font-semibold">🆔&nbsp;Код</td>
+							<td class="font-semibold">🆔&nbsp;Код</td>
 							<td>{transaction.id}</td>
 						</tr>
 						<tr>
-							<td class=" font-semibold">📅&nbsp;Дата</td>
+							<td class="font-semibold">📅&nbsp;Дата</td>
 							<td>
 								{transaction.date.day}
 								{months[transaction.date.month - 1]}
@@ -285,7 +285,7 @@
 							</td>
 						</tr>
 						<tr>
-							<td class=" font-semibold align-top">💬&nbsp;Коментар</td>
+							<td class="font-semibold align-top">💬&nbsp;Коментар</td>
 							<td>{transaction.comment}</td>
 						</tr>
 					</tbody>

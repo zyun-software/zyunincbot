@@ -27,6 +27,13 @@ export async function POST({ request }) {
 
 	if (data.match(/^tab/)) {
 		const user = await findUserByNickname(parts[1]);
+		if (!user) {
+			return text('Ви не зареєстровані в системі');
+		}
+
+		if (user.banned) {
+			return text('Ви заблоковані в системі');
+		}
 
 		const args = parts[2].split(' ');
 		if (args.length === 1) {
@@ -61,23 +68,21 @@ export async function POST({ request }) {
 
 		if (args.length === 3) {
 			if (args[0] === command.account && args[1] === command.transfer) {
-				if (user) {
-					let list = [];
-					const users = await getUsersIgnoreId(user.id);
+				let list = [];
+				const users = await getUsersIgnoreId(user.id);
 
-					if (bank.includes(args[2])) {
-						list.push(bank);
-					}
-
-					for (const u of users) {
-						const name = u.business_name ?? u.nickname;
-						if (name.includes(args[2])) {
-							list.push(name);
-						}
-					}
-
-					return text(list.join('&'));
+				if (bank.includes(args[2])) {
+					list.push(bank);
 				}
+
+				for (const u of users) {
+					const name = u.business_name ?? u.nickname;
+					if (name.includes(args[2])) {
+						list.push(name);
+					}
+				}
+
+				return text(list.join('&'));
 
 				return text(unauth);
 			}
