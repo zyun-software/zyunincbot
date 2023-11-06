@@ -6,4 +6,6 @@
 	onMount(() => showBackButton(() => goto('/')));
 </script>
 
-<div class="p-4">Тут буде допомога, можливо...</div>
+<div class="p-4">
+	В Minecraft доступні команди через <b>/api zyuninc</b>
+</div>

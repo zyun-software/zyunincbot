@@ -67,7 +67,7 @@ export const actions = {
 				user.id,
 				invoice.user_id,
 				amount,
-				`Оплата за чек №${invoice.id}`
+				`Оплата чеку №${invoice.id}`
 			);
 
 			switch (transaction.status) {

@@ -200,6 +200,32 @@ export const minusQuantityProduct = async (id: string, quantity: number) => {
 	}
 };
 
+export const pluseQuantityProduct = async (id: string, quantity: number) => {
+	try {
+		await sql`
+			update products
+			set quantity = quantity + ${quantity}
+			where id = ${id}`;
+	} catch (e) {
+		console.log(e);
+	}
+};
+
+export const getProductCodes = async (user_id: string) => {
+	try {
+		const items = await sql<ProductType[]>`
+			select *
+			from products
+			where user_id = ${user_id}
+		`;
+		return items.map((item) => item.id);
+	} catch (e) {
+		console.log(e);
+
+		return [];
+	}
+};
+
 export const deleteProduct = async (id: string) => {
 	try {
 		await sql`delete from products where id = ${id}`;
@@ -246,6 +272,26 @@ export const getProductsByIds = async (ids: string[]) => {
 		console.log(e);
 
 		return [];
+	}
+};
+
+export const findProductById = async (id: string, user_id: string) => {
+	try {
+		const items = await sql<ProductType[]>`
+			select *
+			from products
+			where id = ${id} and user_id = ${user_id}
+		`;
+
+		if (items.length !== 1) {
+			return null;
+		}
+
+		return items[0];
+	} catch (e) {
+		console.log(e);
+
+		return null;
 	}
 };
 

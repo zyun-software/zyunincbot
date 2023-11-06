@@ -109,7 +109,6 @@ export const getDateString = (date: DateType) => {
 
 	const dayOfMonth = parsedDate.getDate();
 	const monthIndex = parsedDate.getMonth();
-	const monthText = months[monthIndex];
 	const year = parsedDate.getFullYear();
 
 	if (date.month === monthIndex + 1 && date.year === year) {
@@ -122,7 +121,7 @@ export const getDateString = (date: DateType) => {
 		}
 	}
 
-	let result = `${dayOfMonth} ${monthText}`;
+	let result = `${date.day} ${months[date.month - 1]}`;
 	if (date.year !== year) {
 		result += ` ${date.year}`;
 	}

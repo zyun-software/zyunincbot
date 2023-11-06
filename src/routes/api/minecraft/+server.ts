@@ -1,5 +1,19 @@
-import { MC_TOKEN } from '$env/static/private';
-import { calculateBalance, findUserByNickname, getUsersIgnoreId, transferMoney } from '$lib/server';
+import { MC_TOKEN, URL_PANEL } from '$env/static/private';
+import {
+	buyGoods,
+	calculateBalance,
+	findProductById,
+	findUserById,
+	findUserByNickname,
+	getProductCodes,
+	getProductsByIds,
+	getRandomQuote,
+	getUsersIgnoreId,
+	insertUser,
+	pluseQuantityProduct,
+	telegram,
+	transferMoney
+} from '$lib/server';
 import { text } from '@sveltejs/kit';
 
 export async function POST({ request }) {
@@ -13,21 +27,30 @@ export async function POST({ request }) {
 		account: 'рахунок',
 		goods: 'товар',
 		basket: 'кошик',
-		status: 'статус',
-		pay: 'оплатити',
 		balance: 'баланс',
-		transfer: 'переказ'
+		transfer: 'переказ',
+		add: 'додати',
+		remove: 'прибрати',
+		cost: 'вартість',
+		buy: 'придбати',
+		register: 'зареєструватися'
 	};
 
 	const bank = 'Zyun_Bank';
-	const unauth = 'Ви не авторизовані в системі';
 
 	const data = await request.text();
 	const parts = data.split('&&');
 
 	if (data.match(/^tab/)) {
+		const args = parts[2].split(' ');
 		const user = await findUserByNickname(parts[1]);
 		if (!user) {
+			if (args.length === 1 && command.register.includes(args[0])) {
+				return text(command.register);
+			}
+			if (args.length === 2 && args[0] === command.register) {
+				return text('Код з Telegram');
+			}
 			return text('Ви не зареєстровані в системі');
 		}
 
@@ -35,7 +58,6 @@ export async function POST({ request }) {
 			return text('Ви заблоковані в системі');
 		}
 
-		const args = parts[2].split(' ');
 		if (args.length === 1) {
 			let list = [];
 
@@ -52,7 +74,7 @@ export async function POST({ request }) {
 			if (args[0] === command.account) {
 				let list = [];
 
-				for (const item of [command.status, command.pay, command.balance, command.transfer]) {
+				for (const item of [command.balance, command.transfer]) {
 					if (item.includes(args[1])) {
 						list.push(item);
 					}
@@ -60,6 +82,42 @@ export async function POST({ request }) {
 
 				if (args[1] === command.balance) {
 					list.push('Ваш баланс в Zyun Банк');
+				}
+
+				return text(list.join('&'));
+			}
+
+			if (args[0] === command.goods) {
+				let list = [];
+
+				for (const item of [command.add, command.remove]) {
+					if (item.includes(args[1])) {
+						list.push(item);
+					}
+				}
+
+				if (args[1] === command.remove) {
+					list.push('Це прибере всі товари в інвентарі');
+				}
+
+				return text(list.join('&'));
+			}
+
+			if (args[0] === command.basket) {
+				let list = [];
+
+				for (const item of [command.cost, command.buy]) {
+					if (item.includes(args[1])) {
+						list.push(item);
+					}
+				}
+
+				if (args[1] === command.cost) {
+					list.push('Порахувати вартість товарів у інвентарі');
+				}
+
+				if (args[1] === command.buy) {
+					list.push('Придбати товари у інвентарі');
 				}
 
 				return text(list.join('&'));
@@ -83,8 +141,19 @@ export async function POST({ request }) {
 				}
 
 				return text(list.join('&'));
+			}
 
-				return text(unauth);
+			if (args[0] === command.goods && args[1] === command.add) {
+				let list = [];
+				const codes = await getProductCodes(user.id);
+
+				for (const code of codes) {
+					if (code.includes(args[2])) {
+						list.push(code);
+					}
+				}
+
+				return text(list.join('&'));
 			}
 		}
 
@@ -98,18 +167,61 @@ export async function POST({ request }) {
 			return text('Коментар');
 		}
 
-		return text('');
+		return text('Команду не знайдено');
 	}
 
 	if (data.match(/^command/)) {
 		const user = await findUserByNickname(parts[1]);
 		if (!user) {
+			const registerMatches = parts[3].match(new RegExp(`^${command.register} (\\d+)$`));
+			if (registerMatches) {
+				const findUser = await findUserById(registerMatches[1]);
+				if (findUser) {
+					return text('message&§cЦей код вже зареєстровано в системі');
+				}
+
+				await insertUser({ id: registerMatches[1], nickname: parts[1] });
+
+				await telegram('setChatMenuButton', {
+					chat_id: registerMatches[1],
+					menu_button: {
+						type: 'web_app',
+						text: 'Zyun Банк',
+						web_app: {
+							url: `${URL_PANEL}/bank`
+						}
+					}
+				});
+
+				const quote = await getRandomQuote();
+
+				await telegram('sendMessage', {
+					chat_id: registerMatches[1],
+					text: `🚪 Натисніть кнопку щоб перейти до меню банку\n\n` + `💬 "<i>${quote}"</i>`,
+					parse_mode: 'HTML',
+					reply_markup: {
+						inline_keyboard: [
+							[
+								{
+									web_app: { url: `${URL_PANEL}/bank` },
+									text: '🏦 Zyun Банк'
+								}
+							]
+						]
+					}
+				});
+
+				return text('message&§aВи успішно зареєструвалися в системі в системі');
+			}
+
 			return text('message&§cВи не зареєстровані в системі');
 		}
 
 		if (user.banned) {
 			return text('message&§cВи заблоковані в системі');
 		}
+
+		const stackInHand = parseInt(parts[2]);
 
 		if (parts[3] === `${command.account} ${command.balance}`) {
 			const balance = await calculateBalance(user.id);
@@ -119,7 +231,7 @@ export async function POST({ request }) {
 		}
 
 		const transferMoneyMatches = parts[3].match(
-			new RegExp(`^${command.account} ${command.transfer} ([^ ]{1,16}) (\\d+)( .*)?`)
+			new RegExp(`^${command.account} ${command.transfer} ([^ ]{1,16}) (\\d+)( .*)?$`)
 		);
 
 		if (transferMoneyMatches) {
@@ -158,6 +270,131 @@ export async function POST({ request }) {
 				default:
 					return text('message&§cНевідома помилка');
 			}
+		}
+
+		const addProductMatches = parts[3].match(
+			new RegExp(`^${command.goods} ${command.add} (\\d+)$`)
+		);
+		if (addProductMatches) {
+			const product = await findProductById(addProductMatches[1], user.id);
+			if (!product) {
+				return text('message&§cТовар не знайдено');
+			}
+
+			if (stackInHand !== product.stack) {
+				return text(`message&§cСтак цього товару повинен дорівнювати §e${product.stack}`);
+			}
+
+			await pluseQuantityProduct(product.id, 1);
+
+			return text(
+				`setnbt&§6§lТовар\`${user.business_name ?? user.nickname}:${
+					product.id
+				}&&message&§aТовар додано`
+			);
+		}
+
+		const removeProductsMatches = parts[3].match(
+			new RegExp(`^${command.goods} ${command.remove}$`)
+		);
+		if (removeProductsMatches) {
+			const lines = parts[4].split('``');
+			if (lines.length === 1 && lines[0] === '') {
+				return text('message&§cВідсутні товари для видалення');
+			}
+			for (const line of lines) {
+				if (!line.match(new RegExp(`${user.business_name ?? user.nickname}`))) {
+					return text('message&§cУ вас в інвентарі є не ваші товари');
+				}
+			}
+
+			return text('clearnbt&&message&§aТовари прибрано');
+		}
+
+		const getProducts = async () => {
+			const lines = parts[4].split('``');
+			if (lines.length === 1 && lines[0] === '') {
+				return 'message&§cВідсутні товари для підрахунку вартості';
+			}
+
+			const goods: { [k: string]: number } = {};
+
+			for (const line of lines) {
+				const [stack, lore] = line.split('&');
+				const codeMatches = lore.match(/(\d+)$/);
+				if (!codeMatches) {
+					return 'message&§cПомилка визначення коду товара';
+				}
+
+				if (!(codeMatches[1] in goods)) {
+					goods[codeMatches[1]] = 0;
+				}
+
+				goods[codeMatches[1]] += parseInt(stack);
+			}
+
+			const ids = Object.keys(goods);
+			const products = await getProductsByIds(ids);
+
+			if (products.length !== ids.length) {
+				return 'message&§cНе знайдено товар на складі';
+			}
+
+			for (const product of products) {
+				if ((goods[product.id] ?? 1) % product.stack !== 0) {
+					return `message&§cСтак товару відрізняється від стаку на складі §e${product.stack}§c, код §e${product.id}`;
+				}
+			}
+
+			return products.map((product) => {
+				return {
+					...product,
+					amount: (goods[product.id] ?? 1) / product.stack
+				};
+			});
+		};
+
+		const costBasketMatches = parts[3].match(new RegExp(`^${command.basket} ${command.cost}$`));
+		if (costBasketMatches) {
+			const products = await getProducts();
+			if (typeof products === 'string') {
+				return text(products);
+			}
+
+			const amount = products.reduce((accumulator, currentItem) => {
+				const product = currentItem.price * currentItem.amount;
+				return accumulator + product;
+			}, 0);
+
+			return text(`message&§aСума товарів складає §e${amount} §a₴`);
+		}
+
+		const payBasketMatches = parts[3].match(new RegExp(`^${command.basket} ${command.buy}$`));
+		if (payBasketMatches) {
+			const products = await getProducts();
+			if (typeof products === 'string') {
+				return text(products);
+			}
+
+			for (const product of products) {
+				if (product.user_id === user.id) {
+					return text('message&§cНе можна купувати власні товари');
+				}
+			}
+
+			const buyResult = await buyGoods(
+				products.map((product) => {
+					return {
+						id: product.id,
+						quantity: product.amount
+					};
+				}),
+				user
+			);
+
+			return text(
+				`${buyResult.success ? 'clearnbt&&message&§a' : 'message&§c'}${buyResult.message}`
+			);
 		}
 	}
 
