@@ -5,6 +5,7 @@ import {
 	findProductById,
 	findUserById,
 	findUserByNickname,
+	getProduct,
 	getProductCodes,
 	getProductsByIds,
 	getRandomQuote,
@@ -151,6 +152,11 @@ export async function POST({ request }) {
 					if (code.includes(args[2])) {
 						list.push(code);
 					}
+				}
+
+				const product = await getProduct(args[2]);
+				if (product && product.user_id === user.id) {
+					list.push(product.name);
 				}
 
 				return text(list.join('&'));
