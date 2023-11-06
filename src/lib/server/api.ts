@@ -150,7 +150,7 @@ export const insertUser = async (user: { id: string; nickname: string }) => {
 
 export type ProductType = {
 	id: string;
-	user_id?: string;
+	user_id: string;
 	name: string;
 	description: string;
 	stack: number;
@@ -189,6 +189,17 @@ export const updateProduct = async (product: ProductType) => {
 	} catch {}
 };
 
+export const minusQuantityProduct = async (id: string, quantity: number) => {
+	try {
+		await sql`
+			update products
+			set quantity = GREATEST(quantity - ${quantity}, 0)
+			where id = ${id}`;
+	} catch (e) {
+		console.log(e);
+	}
+};
+
 export const deleteProduct = async (id: string) => {
 	try {
 		await sql`delete from products where id = ${id}`;
@@ -221,6 +232,21 @@ export const getProducts = async (user_id: string, name: string, page: number) =
 	} catch {}
 
 	return result;
+};
+
+export const getProductsByIds = async (ids: string[]) => {
+	try {
+		const items = await sql<ProductType[]>`
+			select *
+			from products
+			where id = any(${ids})
+		`;
+		return items;
+	} catch (e) {
+		console.log(e);
+
+		return [];
+	}
 };
 
 export const getProduct = async (id: string) => {

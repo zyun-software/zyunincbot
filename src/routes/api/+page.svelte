@@ -30,4 +30,7 @@
 			>Згенерувати {token === '' ? '' : 'новий '}токен</button
 		>
 	</form>
+	<div class="rounded p-2 bg-tg-secondary-bg-color mb-2">Переказ коштів</div>
+	<div class="rounded p-2 bg-tg-secondary-bg-color mb-2">Створення чеку</div>
+	<div class="rounded p-2 bg-tg-secondary-bg-color mb-2">Перегляд чеку</div>
 </div>
