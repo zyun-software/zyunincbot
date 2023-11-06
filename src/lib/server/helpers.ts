@@ -59,6 +59,11 @@ export const createInvoiceFromJson = async (json: string, user_id: string) => {
 			return result;
 		}
 
+		if (items.length === 0) {
+			result.message = 'Потрібно передати принаймі одну позицію';
+			return result;
+		}
+
 		for (const item of items) {
 			if (
 				typeof item !== 'object' ||
@@ -86,4 +91,31 @@ export const createInvoiceFromJson = async (json: string, user_id: string) => {
 	} catch {
 		return result;
 	}
+};
+
+export const findApiUserOrErrorJson = async (userToken: string) => {
+	const [id, token] = userToken.split(':');
+
+	const error = {
+		success: false,
+		message: ''
+	};
+
+	const user = await findUserById(id);
+	if (!user) {
+		error.message = 'Користувача не знайдено';
+		return error;
+	}
+
+	if (user.api !== token) {
+		error.message = 'Невірний токен доступу';
+		return error;
+	}
+
+	if (user.banned) {
+		error.message = 'Користувача заблоковано';
+		return error;
+	}
+
+	return user;
 };
