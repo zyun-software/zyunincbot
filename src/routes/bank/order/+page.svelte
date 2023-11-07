@@ -141,7 +141,7 @@
 						page++;
 						setTimeout(() => loadMoreButton.click(), 10);
 					}}
-					class="mb-2 p-3 rounded bg-tg-secondary-bg-color text-center hover:bg-tg-button-color block w-full"
+					class="p-3 rounded bg-tg-secondary-bg-color text-center hover:bg-tg-button-color block w-full"
 				>
 					🔄 Завантажити ще
 				</button>

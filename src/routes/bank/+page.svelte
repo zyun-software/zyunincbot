@@ -301,7 +301,7 @@
 				filterPage++;
 				setTimeout(() => filterButton.click(), 10);
 			}}
-			class="mb-2 p-3 rounded bg-tg-secondary-bg-color text-center hover:bg-tg-button-color block w-full"
+			class="mb-4 p-3 rounded bg-tg-secondary-bg-color text-center hover:bg-tg-button-color block w-full"
 			>🔄 Завантажити ще</button
 		>
 	</footer>
