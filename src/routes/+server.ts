@@ -157,7 +157,53 @@ export async function POST({ request }) {
 			}
 		}
 
-		const transferMoneyMatches = data.message.text.match(/^Нарахувати ([a-zA-Z0-9_]{1,16}) (\d+)/);
+		const calcMatches = data.message.text.match(/^Бюджет( \d+:\d+\.\d+:\d+)+$/);
+		if (calcMatches) {
+			const amount = await moneySupply();
+			const calc = data.message.text
+				.replace('Бюджет ', '')
+				.split(' ')
+				.map((item: string) => {
+					const [stack, items, cource] = item.split(':');
+					const [stacks, one] = items.split('.');
+
+					const sum = (parseInt(stack) * parseInt(stacks) + parseInt(one)) * parseInt(cource);
+
+					return {
+						key: item,
+						sum
+					};
+				});
+
+			const total = calc.reduce((accumulator: number, currentItem: { sum: number }) => {
+				return accumulator + currentItem.sum;
+			}, 0);
+
+			const need = total - amount;
+
+			console.log(calc, total, amount, need);
+			await telegram('sendMessage', {
+				chat_id,
+				text:
+					`💰 Грошова маса: <code>${amount}</code> ₴\n` +
+					`${
+						need === 0
+							? '⚖️ Фінанси збалансовані'
+							: need < 0
+							? `📉 Дефіцит: <code>${Math.abs(need)}</code>`
+							: `📈 Профіцит: <code>${need}</code>`
+					}\n\n` +
+					calc.map((item: {key: string, sum: number}) => {
+						return `🧮 <code>${item.key}</code> = <code>${item.sum}</code> ₴`;
+					}).join('\n'),
+				parse_mode: 'HTML'
+			});
+			return text('Бюджет');
+		}
+
+		const transferMoneyMatches = data.message.text.match(
+			/^Нарахувати ([a-zA-Z0-9_]{1,16}) (\d+)( .+)?/
+		);
 
 		if (transferMoneyMatches) {
 			const amount = parseInt(transferMoneyMatches[2]);
@@ -247,7 +293,7 @@ export async function POST({ request }) {
 			}
 		}
 
-		if (data.message.text === 'Команди адміністратора') {
+		if (data.message.text === 'Допомога') {
 			await telegram('sendMessage', {
 				chat_id,
 				text:
@@ -259,20 +305,11 @@ export async function POST({ request }) {
 					'<code>Прибрати інформацію бізнесу</code> [<i>псевдонім</i>]\n' +
 					'<code>Додати інформацію бізнесу</code> [<i>псевдонім</i>] [<i>emoji</i>] [<i>назва бізнесу</i>]\n' +
 					'<code>Баланс</code> [<i>псевдонім</i>]\n' +
+					'<code>Бютжет</code> [<i>стак</i>:<i>стаків</i>.<i>блоків</i>:<i>курс</i>]+\n' +
 					'<code>Транзакція</code> [<i>псевдонім</i>]',
 				parse_mode: 'HTML'
 			});
-			return text('Команди адміністратора');
-		}
-
-		if (data.message.text === 'Грошова маса') {
-			const amount = await moneySupply();
-			await telegram('sendMessage', {
-				chat_id,
-				text: `Грошова маса складає <code>${amount}</code> ₴`,
-				parse_mode: 'HTML'
-			});
-			return text('Грошова маса');
+			return text('Допомога');
 		}
 	}
 
