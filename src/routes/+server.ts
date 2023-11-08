@@ -190,12 +190,15 @@ export async function POST({ request }) {
 						need === 0
 							? '⚖️ Фінанси збалансовані'
 							: need < 0
-							? `📉 Дефіцит: <code>${Math.abs(need)}</code>`
-							: `📈 Профіцит: <code>${need}</code>`
-					}\n\n` +
-					calc.map((item: {key: string, sum: number}) => {
-						return `🧮 <code>${item.key}</code> = <code>${item.sum}</code> ₴`;
-					}).join('\n'),
+							? `📉 Дефіцит: <code>${Math.abs(need)}</code> ₴`
+							: `📈 Профіцит: <code>${need}</code> ₴`
+					}\n` +
+					`🧮 Сума: <code>${total}</code> ₴\n\n` +
+					calc
+						.map((item: { key: string; sum: number }) => {
+							return `🔢 <code>${item.key}</code> = <code>${item.sum}</code> ₴`;
+						})
+						.join('\n'),
 				parse_mode: 'HTML'
 			});
 			return text('Бюджет');
