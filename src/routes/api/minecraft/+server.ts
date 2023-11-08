@@ -34,7 +34,8 @@ export async function POST({ request }) {
 		remove: 'прибрати',
 		cost: 'вартість',
 		buy: 'придбати',
-		register: 'зареєструватися'
+		register: 'зареєструватися',
+		money_supply: 'грошова_маса'
 	};
 
 	const bank = 'Zyun_Bank';
@@ -65,6 +66,12 @@ export async function POST({ request }) {
 			for (const item of [command.account, command.goods, command.basket]) {
 				if (item.includes(args[0])) {
 					list.push(item);
+				}
+			}
+
+			if (user.admin) {
+				if (command.money_supply.includes(args[0])) {
+					list.push(command.money_supply);
 				}
 			}
 
@@ -228,6 +235,15 @@ export async function POST({ request }) {
 		}
 
 		const stackInHand = parseInt(parts[2]);
+
+		if (user.admin && parts[3] === command.money_supply) {
+			const amount = await moneySupply();
+			return text(
+				`message&§aГрошова маса складає: §e${balance
+					.toString()
+					.replace(/(\d)(?=(\d{3})+$)/g, '$1.')} §a₴`
+			);
+		}
 
 		if (parts[3] === `${command.account} ${command.balance}`) {
 			const balance = await calculateBalance(user.id);

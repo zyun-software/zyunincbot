@@ -6,6 +6,7 @@ import {
 	findUserByNickname,
 	getRandomQuote,
 	insertUser,
+	moneySupply,
 	telegram,
 	transferMoney,
 	updateUser
@@ -262,6 +263,16 @@ export async function POST({ request }) {
 				parse_mode: 'HTML'
 			});
 			return text('Команди адміністратора');
+		}
+
+		if (data.message.text === 'Грошова маса') {
+			const amount = await moneySupply();
+			await telegram('sendMessage', {
+				chat_id,
+				text: `Грошова маса складає <code>${amount}</code> ₴`,
+				parse_mode: 'HTML'
+			});
+			return text('Грошова маса');
 		}
 	}
 

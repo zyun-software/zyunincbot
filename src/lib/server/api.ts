@@ -105,6 +105,30 @@ export const calculateBalance = async (id: string) => {
 	}
 };
 
+export const moneySupply = async () => {
+	try {
+		const results = await sql<{ money_supply: number }[]>`
+			select
+				sum(
+					case
+						when receiver_id is null then -amount
+						else amount
+					end
+				) as money_supply
+			from transactions
+			where sender_id is null or receiver_id is null
+		`;
+
+		if (results.length !== 1) {
+			return 0;
+		}
+
+		return results[0].money_supply;
+	} catch {
+		return 0;
+	}
+};
+
 export const getUsersIgnoreId = async (id: string) => {
 	try {
 		const users = await sql<
