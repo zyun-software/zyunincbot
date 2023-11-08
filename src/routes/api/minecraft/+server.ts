@@ -11,6 +11,7 @@ import {
 	getRandomQuote,
 	getUsersIgnoreId,
 	insertUser,
+	moneySupply,
 	pluseQuantityProduct,
 	telegram,
 	transferMoney
@@ -239,7 +240,7 @@ export async function POST({ request }) {
 		if (user.admin && parts[3] === command.money_supply) {
 			const amount = await moneySupply();
 			return text(
-				`message&§aГрошова маса складає: §e${balance
+				`message&§aГрошова маса складає: §e${amount
 					.toString()
 					.replace(/(\d)(?=(\d{3})+$)/g, '$1.')} §a₴`
 			);
