@@ -11,9 +11,6 @@ CREATE TABLE users (
 INSERT INTO users (id, nickname, admin, emoji, business_name)
 VALUES
   (494209756, 'Ziozyun', TRUE, NULL, NULL);
-  #(873687184, 'Kyryl_Kruhliak', FALSE, NULL, NULL),
-  #(5300000961, 'Capybarsk', FALSE, '🌃', 'Капібарськ'),
-  #(543592260, 'Han__Salo', FALSE, NULL, NULL);
 
 CREATE TABLE quotes (
   id BIGSERIAL PRIMARY KEY NOT NULL,

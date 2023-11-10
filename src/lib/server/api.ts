@@ -109,12 +109,12 @@ export const moneySupply = async () => {
 	try {
 		const results = await sql<{ money_supply: number }[]>`
 			select
-				sum(
+				COALESCE(sum(
 					case
 						when receiver_id is null then -amount
 						else amount
 					end
-				) as money_supply
+				), 0) as money_supply
 			from transactions
 			where sender_id is null or receiver_id is null
 		`;

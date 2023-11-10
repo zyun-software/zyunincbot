@@ -160,6 +160,7 @@ export async function POST({ request }) {
 		const calcMatches = data.message.text.match(/^Бюджет( \d+:\d+\.\d+:\d+)+$/);
 		if (calcMatches) {
 			const amount = await moneySupply();
+
 			const calc = data.message.text
 				.replace('Бюджет ', '')
 				.split(' ')
@@ -167,38 +168,48 @@ export async function POST({ request }) {
 					const [stack, items, cource] = item.split(':');
 					const [stacks, one] = items.split('.');
 
-					const sum = (parseInt(stack) * parseInt(stacks) + parseInt(one)) * parseInt(cource);
+					const sum = parseInt(stack) * parseInt(stacks) + parseInt(one);
+					const courceNumber = parseInt(cource);
+					const coins = Math.floor(sum / courceNumber);
+					const remainder = sum % courceNumber;
 
 					return {
 						key: item,
-						sum
+						sum,
+						coins,
+						remainder
 					};
 				});
 
-			const total = calc.reduce((accumulator: number, currentItem: { sum: number }) => {
-				return accumulator + currentItem.sum;
+			const total = calc.reduce((accumulator: number, currentItem: { coins: number }) => {
+				return accumulator + currentItem.coins;
 			}, 0);
 
 			const need = total - amount;
 
-			console.log(calc, total, amount, need);
 			await telegram('sendMessage', {
 				chat_id,
 				text:
 					`💰 Грошова маса: <code>${amount}</code> ₴\n` +
+					`🏦 В банку: <code>${total}</code> ₴\n` +
 					`${
 						need === 0
 							? '⚖️ Фінанси збалансовані'
 							: need < 0
 							? `📉 Дефіцит: <code>${Math.abs(need)}</code> ₴`
 							: `📈 Профіцит: <code>${need}</code> ₴`
-					}\n` +
-					`🧮 Сума: <code>${total}</code> ₴\n\n` +
+					}\n\n` +
 					calc
-						.map((item: { key: string; sum: number }) => {
-							return `🔢 <code>${item.key}</code> = <code>${item.sum}</code> ₴`;
+						.map((item: { key: string; coins: number; remainder: number; sum: number }) => {
+							return (
+								`🔢 <code>${item.key}</code>\n` +
+								`🧮 Сума: <code>${item.coins}</code> ₴\n` +
+								`🪙 Предмети: <code>${item.sum - item.remainder}</code>${
+									item.remainder > 0 ? ` +<code>${item.remainder}</code>` : ''
+								}`
+							);
 						})
-						.join('\n'),
+						.join('\n\n'),
 				parse_mode: 'HTML'
 			});
 			return text('Бюджет');
@@ -308,7 +319,7 @@ export async function POST({ request }) {
 					'<code>Прибрати інформацію бізнесу</code> [<i>псевдонім</i>]\n' +
 					'<code>Додати інформацію бізнесу</code> [<i>псевдонім</i>] [<i>emoji</i>] [<i>назва бізнесу</i>]\n' +
 					'<code>Баланс</code> [<i>псевдонім</i>]\n' +
-					'<code>Бютжет</code> [<i>стак</i>:<i>стаків</i>.<i>блоків</i>:<i>курс</i>]+\n' +
+					'<code>Бюджет</code> [<i>стак</i>:<i>стаків</i>.<i>блоків</i>:<i>курс</i>]+\n' +
 					'<code>Транзакція</code> [<i>псевдонім</i>]',
 				parse_mode: 'HTML'
 			});
