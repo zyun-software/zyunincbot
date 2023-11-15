@@ -385,7 +385,7 @@ export async function POST({ request }) {
 			}
 
 			const amount = products.reduce((accumulator, currentItem) => {
-				const product = currentItem.price * currentItem.amount;
+				const product = currentItem.price * currentItem.amount * currentItem.stack;
 				return accumulator + product;
 			}, 0);
 
