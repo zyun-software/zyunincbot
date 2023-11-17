@@ -5,6 +5,10 @@
 
 	export let data;
 
+	if (data.business_name && /[а-яА-Я]/.test(data.business_name)) {
+		data.business_name = data.business_name.replaceAll('_', ' ');
+	}
+
 	const row = 'grid grid-cols-3 gap-2 mb-2';
 	const button =
 		'p-3 w-full block bg-tg-secondary-bg-color hover:bg-tg-button-color text-center rounded';

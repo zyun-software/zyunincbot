@@ -133,7 +133,16 @@
 			>
 				<option value={0}>Zyun Банк</option>
 				{#each addressees ?? [] as { id, nickname, business_name }}
-					<option value={id}>{business_name ?? nickname}</option>
+					<option value={id}
+						>{(() => {
+							let data = business_name ?? nickname;
+							if (data && /[а-яА-Я]/.test(data)) {
+								data = data.replaceAll('_', ' ');
+							}
+
+							return data;
+						})()}</option
+					>
 				{/each}
 			</select>
 		</fieldset>
@@ -262,7 +271,16 @@
 				{:else}
 					<img src="https://cravatar.eu/helmhead/{transaction.nickname}" class="w-12" alt="" />
 				{/if}
-				<span class="flex-grow">{transaction.business_name ?? transaction.nickname}</span>
+				<span class="flex-grow"
+					>{(() => {
+						let data = transaction.business_name ?? transaction.nickname;
+						if (data && /[а-яА-Я]/.test(data)) {
+							data = data.replaceAll('_', ' ');
+						}
+
+						return data;
+					})()}</span
+				>
 				<span class={transaction.amount >= 0 ? 'text-green-500' : ''}>{transaction.amount}</span>
 			</button>
 			<div class={selectedTransactionIndex === i ? 'px-4 pb-4' : ''}>

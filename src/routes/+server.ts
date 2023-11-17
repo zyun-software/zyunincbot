@@ -231,7 +231,7 @@ export async function POST({ request }) {
 				if (transaction && transaction.status === 'SUCCESS') {
 					await telegram('sendMessage', {
 						chat_id,
-						text: `✅ <code>${receiver.nickname}</code> було нараховано <code>${amount}</code> ₴`,
+						text: `✅ <code>${receiver.nickname}</code> було нараховано <code>${amount}</code> ₴, код <code>${transaction.transaction_id}</code>`,
 						parse_mode: 'HTML'
 					});
 					return text('Нарахування грошей гравцю');
