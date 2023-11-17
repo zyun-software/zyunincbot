@@ -226,18 +226,25 @@ export const buyGoods = async (goods: any, user: UserType) => {
 
 				if (transaction.status === 'SUCCESS') {
 					await updateInvoice(invoice.id ?? '-1', transaction.transaction_id ?? '');
+
+					return {
+						success: true,
+						message: 'Товари придбано'
+					};
+				}
+
+				if (transaction.status === 'NO_COST') {
+					return {
+						success: true,
+						message: 'У вас недостатньо коштів'
+					};
 				}
 			}
 		}
+	} catch {}
 
-		return {
-			success: true,
-			message: 'Товари придбано'
-		};
-	} catch (e) {
-		return {
-			success: false,
-			message: 'Невідома помилка'
-		};
-	}
+	return {
+		success: false,
+		message: 'Невідома помилка'
+	};
 };
