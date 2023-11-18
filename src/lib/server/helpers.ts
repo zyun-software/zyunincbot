@@ -235,7 +235,7 @@ export const buyGoods = async (goods: any, user: UserType) => {
 
 				if (transaction.status === 'NO_COST') {
 					return {
-						success: true,
+						success: false,
 						message: 'У вас недостатньо коштів'
 					};
 				}
