@@ -11,6 +11,7 @@ import {
 	getRandomQuote,
 	getUsersIgnoreId,
 	insertUser,
+	minusQuantityProduct,
 	moneySupply,
 	pluseQuantityProduct,
 	telegram,
@@ -34,7 +35,8 @@ export async function POST({ request }) {
 		add: 'додати',
 		remove: 'прибрати',
 		cost: 'вартість',
-		buy: 'придбати',
+		cash: 'оплата_готівкою',
+		buy: 'оплата_онлайн',
 		register: 'зареєструватися',
 		money_supply: 'грошова_маса'
 	};
@@ -115,7 +117,7 @@ export async function POST({ request }) {
 			if (args[0] === command.basket) {
 				let list = [];
 
-				for (const item of [command.cost, command.buy]) {
+				for (const item of [command.cost, command.buy, command.cash]) {
 					if (item.includes(args[1])) {
 						list.push(item);
 					}
@@ -418,6 +420,43 @@ export async function POST({ request }) {
 			return text(
 				`${buyResult.success ? 'clearnbt&&message&§a' : 'message&§c'}${buyResult.message}`
 			);
+		}
+
+		const cashBasketMatches = parts[3].match(new RegExp(`^${command.basket} ${command.cash}$`));
+		if (cashBasketMatches) {
+			const products = await getProducts();
+			if (typeof products === 'string') {
+				return text(products);
+			}
+
+			for (const p of products) {
+				if (p.user_id === user.id) {
+					return text('message&§cВи не можете придбати власний товар');
+				}
+			}
+
+			const dd: {
+				[id: string]: string[];
+			} = {};
+
+			for (const p of products) {
+				await minusQuantityProduct(p.id, p.amount);
+				if (!(p.user_id in dd)) {
+					dd[p.user_id] = [];
+				}
+				dd[p.user_id].push(`${p.name} x${p.stack}, ${p.amount} шт.`);
+			}
+
+			for (const chat_id in dd) {
+				const con = dd[chat_id].join(', ');
+				await telegram('sendMessage', {
+					chat_id,
+					text: `🛍 За наступні товари щойно розрахувався <code>${user.nickname}</code> готівкою: ${con}`,
+					parse_mode: 'HTML'
+				});
+			}
+
+			return text('clearnbt&&message&§aТовари придбано');
 		}
 	}
 
