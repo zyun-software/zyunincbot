@@ -186,16 +186,17 @@ export const insertProduct = async (product: ProductType) => {
 	try {
 		product.name = clearString(product.name);
 		product.description = clearString(product.description);
-		await sql`insert into products ${sql(
-			product,
-			'user_id',
-			'name',
-			'description',
-			'stack',
-			'price',
-			'quantity'
-		)}`;
-	} catch {}
+
+		const row = await sql<{ id: string }[]>`
+			insert into products
+				(user_id, name, description, stack, price, quantity)
+			values
+				(${product.user_id}, ${product.name}, ${product.description}, ${product.stack}, ${product.price}, ${product.quantity})
+			returning id`;
+		return row[0].id ?? null;
+	} catch {
+		return null;
+	}
 };
 
 export const updateProduct = async (product: ProductType) => {
