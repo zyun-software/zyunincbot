@@ -10,6 +10,7 @@ import {
 	getProductsByIds,
 	getRandomQuote,
 	getUsersIgnoreId,
+	insertProduct,
 	insertUser,
 	minusQuantityProduct,
 	moneySupply,
@@ -38,7 +39,8 @@ export async function POST({ request }) {
 		cash: 'оплата_готівкою',
 		buy: 'оплата_онлайн',
 		register: 'зареєструватися',
-		money_supply: 'грошова_маса'
+		money_supply: 'грошова_маса',
+		create: 'створити'
 	};
 
 	const bank = 'Zyun_Bank';
@@ -101,7 +103,7 @@ export async function POST({ request }) {
 			if (args[0] === command.goods) {
 				let list = [];
 
-				for (const item of [command.add, command.remove]) {
+				for (const item of [command.add, command.remove, command.create]) {
 					if (item.includes(args[1])) {
 						list.push(item);
 					}
@@ -181,6 +183,14 @@ export async function POST({ request }) {
 
 		if (args.length > 4 && args[0] === command.account && args[1] === command.transfer) {
 			return text('Коментар');
+		}
+
+		if (args.length === 3 && args[0] === command.goods && args[1] === command.create) {
+			return text('Ціна');
+		}
+
+		if (args.length > 3 && args[0] === command.goods && args[1] === command.create) {
+			return text('Назва');
 		}
 
 		return text('Команду не знайдено');
@@ -457,6 +467,31 @@ export async function POST({ request }) {
 			}
 
 			return text('clearnbt&&message&§aТовари придбано');
+		}
+
+		const createMatches = parts[3].match(
+			new RegExp(`^${command.goods} ${command.create} (\\d+) (.+)$`)
+		);
+		if (createMatches) {
+			const price = parseInt(createMatches[1]);
+			const name = createMatches[2];
+			const id = await insertProduct({
+				id: '',
+				user_id: user.id,
+				name,
+				description: '',
+				stack: stackInHand,
+				price: price,
+				quantity: 1
+			});
+
+			if (id === null) {
+				return text('message&§cПомилка створення товару');
+			} else {
+				return text(
+					`setnbt&§6§lТовар\`${user.business_name ?? user.nickname}:${id}&&message&§aТовар створено`
+				);
+			}
 		}
 	}
 
