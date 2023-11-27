@@ -157,59 +157,32 @@ export async function POST({ request }) {
 			}
 		}
 
-		const calcMatches = data.message.text.match(/^Бюджет( \d+:\d+\.\d+:\d+)+$/);
+		const calcMatches = data.message.text.match(/^Бюджет( \d+:\d+:\d+:\d+)+$/);
 		if (calcMatches) {
 			const amount = await moneySupply();
 
-			const calc = data.message.text
-				.replace('Бюджет ', '')
-				.split(' ')
-				.map((item: string) => {
-					const [stack, items, cource] = item.split(':');
-					const [stacks, one] = items.split('.');
+			const [stackBlocks, blocks, stacks, items] = calcMatches[1].split(':');
 
-					const sum = parseInt(stack) * parseInt(stacks) + parseInt(one);
-					const courceNumber = parseInt(cource);
-					const coins = Math.floor(sum / courceNumber);
-					const remainder = sum % courceNumber;
+			const sum =
+				parseInt(stackBlocks) * 64 * 9 +
+				parseInt(blocks) * 9 +
+				parseInt(stacks) * 64 +
+				parseInt(items);
 
-					return {
-						key: item,
-						sum,
-						coins,
-						remainder
-					};
-				});
-
-			const total = calc.reduce((accumulator: number, currentItem: { coins: number }) => {
-				return accumulator + currentItem.coins;
-			}, 0);
-
-			const need = total - amount;
+			const need = sum - amount;
 
 			await telegram('sendMessage', {
 				chat_id,
 				text:
 					`💰 Грошова маса: <code>${amount}</code> ₴\n` +
-					`🏦 В банку: <code>${total}</code> ₴\n` +
+					`🏦 В банку: <code>${sum}</code> ₴\n` +
 					`${
 						need === 0
 							? '⚖️ Фінанси збалансовані'
 							: need < 0
 							? `📉 Дефіцит: <code>${Math.abs(need)}</code> ₴`
 							: `📈 Профіцит: <code>${need}</code> ₴`
-					}\n\n` +
-					calc
-						.map((item: { key: string; coins: number; remainder: number; sum: number }) => {
-							return (
-								`🔢 <code>${item.key}</code>\n` +
-								`🧮 Сума: <code>${item.coins}</code> ₴\n` +
-								`🪙 Предмети: <code>${item.sum - item.remainder}</code>${
-									item.remainder > 0 ? ` +<code>${item.remainder}</code>` : ''
-								}`
-							);
-						})
-						.join('\n\n'),
+					}`,
 				parse_mode: 'HTML'
 			});
 			return text('Бюджет');
