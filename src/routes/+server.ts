@@ -59,9 +59,9 @@ export async function POST({ request }) {
 			chat_id,
 			menu_button: {
 				type: 'web_app',
-				text: 'Zyun Банк',
+				text: 'Корпорація',
 				web_app: {
-					url: `${URL_PANEL}/bank`
+					url: URL_PANEL
 				}
 			}
 		});
@@ -157,17 +157,25 @@ export async function POST({ request }) {
 			}
 		}
 
-		const calcMatches = data.message.text.match(/^Бюджет( \d+:\d+:\d+:\d+)+$/);
+		const calcMatches = data.message.text.match(/^Бюджет( \d+:\d+:\d+:\d+:\d+)+$/);
 		if (calcMatches) {
 			const amount = await moneySupply();
 
-			const [stackBlocks, blocks, stacks, items] = calcMatches[1].split(':');
+			const sum = data.message.text
+				.replace('Бюджет ', '')
+				.split(' ')
+				.reduce((a: number, c: string) => {
+					const [stackBlocks, blocks, stacks, items, cource] = c.split(':');
 
-			const sum =
-				parseInt(stackBlocks) * 64 * 9 +
-				parseInt(blocks) * 9 +
-				parseInt(stacks) * 64 +
-				parseInt(items);
+					const res =
+						(parseInt(stackBlocks) * 64 * 9 +
+							parseInt(blocks) * 9 +
+							parseInt(stacks) * 64 +
+							parseInt(items)) *
+						parseInt(cource);
+
+					return a + res;
+				}, 0);
 
 			const need = sum - amount;
 
@@ -292,7 +300,7 @@ export async function POST({ request }) {
 					'<code>Прибрати інформацію бізнесу</code> [<i>псевдонім</i>]\n' +
 					'<code>Додати інформацію бізнесу</code> [<i>псевдонім</i>] [<i>emoji</i>] [<i>назва бізнесу</i>]\n' +
 					'<code>Баланс</code> [<i>псевдонім</i>]\n' +
-					'<code>Бюджет</code> [<i>стак</i>:<i>стаків</i>.<i>блоків</i>:<i>курс</i>]+\n' +
+					'<code>Бюджет</code> [<i>стаків блоків</i>:<i>блоків</i>.<i>стаків</i>:<i>предметів</i>]+\n' +
 					'<code>Транзакція</code> [<i>псевдонім</i>]',
 				parse_mode: 'HTML'
 			});
@@ -306,14 +314,26 @@ export async function POST({ request }) {
 
 	await telegram('sendMessage', {
 		chat_id,
-		text: `🚪 Натисніть кнопку щоб перейти до меню банку\n\n` + `💬 "<i>${quote}"</i>`,
+		text:
+			`🔍 Дізнайтеся більше про бізнеси, що входять до складу <b>Zyun Inc ™</b> та їхню діяльність.\n\n` +
+			`💬 "<i>${quote}"</i>`,
 		parse_mode: 'HTML',
 		reply_markup: {
 			inline_keyboard: [
 				[
 					{
-						web_app: { url: `${URL_PANEL}/bank` },
-						text: '🏦 Zyun Банк'
+						web_app: { url: URL_PANEL },
+						text: '🏢 Перейти до списку компаній'
+					}
+				],
+				[
+					{
+						web_app: { url: `${URL_PANEL}/api` },
+						text: '🤖 API'
+					},
+					{
+						web_app: { url: `${URL_PANEL}/donate` },
+						text: '💸 Підтримати'
 					}
 				]
 			]

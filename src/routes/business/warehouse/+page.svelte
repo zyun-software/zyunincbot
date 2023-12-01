@@ -36,7 +36,7 @@
 		if (form?.message) {
 			alertUtility(form.message);
 		}
-		showBackButton(() => goto('/'));
+		showBackButton(() => goto('/business'));
 	});
 
 	function updateProducts(items: any) {

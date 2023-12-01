@@ -133,7 +133,7 @@ export const getUsersIgnoreId = async (id: string) => {
 	try {
 		const users = await sql<
 			UserType[]
-		>`select * from users where id <> ${id} and not banned order by business_name, nickname`;
+		>`select * from users where id <> ${id} and not banned order by lower(business_name), lower(nickname)`;
 
 		return users;
 	} catch {
