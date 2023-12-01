@@ -59,7 +59,7 @@
 		hideMainButton();
 		showBackButton(() => {
 			hideMainButton();
-			goto('/bank');
+			goto('/business');
 		});
 	});
 

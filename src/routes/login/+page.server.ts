@@ -20,7 +20,7 @@ export const actions = {
 		}
 
 		if (!error) {
-			throw redirect(307, '/bank');
+			throw redirect(307, '/');
 		}
 
 		return {

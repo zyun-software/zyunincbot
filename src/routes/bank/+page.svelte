@@ -56,13 +56,13 @@
 <header class="px-4 mt-10">
 	<div class="flex items-center justify-center mb-8">
 		<span class="text-4xl font-bold mr-2">{balanceFormatted}</span>
-		<span class="text-3xl mr-2">₴</span>
+		<span class="text-3xl mr-2">c</span>
 		<button
 			on:click={() => location.reload()}
 			class="p-2 rounded bg-tg-secondary-bg-color hover:bg-tg-button-color">🔄</button
 		>
 	</div>
-	<nav class="grid grid-cols-3 gap-2">
+	<nav class="grid grid-cols-2 gap-2">
 		<button
 			on:click={() => {
 				showTransferMoneyButton = !showTransferMoneyButton;
@@ -98,7 +98,6 @@
 				? 'bg-tg-button-color'
 				: 'bg-tg-secondary-bg-color'}">🔍 Фільтр</button
 		>
-		<a href="/bank/order" class="p-3 rounded bg-tg-secondary-bg-color text-center">📑 Чек</a>
 	</nav>
 	<form
 		method="post"

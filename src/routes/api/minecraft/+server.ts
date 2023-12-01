@@ -254,14 +254,14 @@ export async function POST({ request }) {
 			return text(
 				`message&§aГрошова маса складає: §e${amount
 					.toString()
-					.replace(/(\d)(?=(\d{3})+$)/g, '$1.')} §a₴`
+					.replace(/(\d)(?=(\d{3})+$)/g, '$1.')} §ac`
 			);
 		}
 
 		if (parts[3] === `${command.account} ${command.balance}`) {
 			const balance = await calculateBalance(user.id);
 			return text(
-				`message&§aВаш баланс: §e${balance.toString().replace(/(\d)(?=(\d{3})+$)/g, '$1.')} §a₴`
+				`message&§aВаш баланс: §e${balance.toString().replace(/(\d)(?=(\d{3})+$)/g, '$1.')} §ac`
 			);
 		}
 
@@ -401,7 +401,7 @@ export async function POST({ request }) {
 				return accumulator + product;
 			}, 0);
 
-			return text(`message&§aСума товарів складає §e${amount} §a₴`);
+			return text(`message&§aСума товарів складає §e${amount} §ac`);
 		}
 
 		const payBasketMatches = parts[3].match(new RegExp(`^${command.basket} ${command.buy}$`));

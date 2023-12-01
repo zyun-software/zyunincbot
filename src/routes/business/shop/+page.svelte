@@ -16,7 +16,7 @@
 
 	onMount(() => {
 		hideMainButton();
-		showBackButton(() => goto('/'));
+		showBackButton(() => goto('/business'));
 		basket.subscribe(() => {
 			showPayButton();
 		});
